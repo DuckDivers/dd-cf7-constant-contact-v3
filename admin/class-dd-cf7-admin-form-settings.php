@@ -20,6 +20,7 @@ class dd_cf7_form_admin_settings {
 			'email_address' => 'E-Mail Address',
 			'first_name' => 'First Name',
 			'last_name' => 'Last Name',
+            'phone_number' => 'Phone Number',
 			'street' => 'Street',
 			'city' => 'City',
 			'state' => 'State',
@@ -59,16 +60,19 @@ class dd_cf7_form_admin_settings {
         $saved_fields = isset( $settings['fields'] ) ? $settings['fields'] : NULL;
         $ignore_form = isset( $settings['ignore-form'] ) ? $settings['ignore-form'] : NULL;
 
-		?>
+        ?>
 		<div class="wpcf7cf-inner-container">
 			<h3><?php echo esc_html( __( 'Constant Contact', 'dd-cf7-plugin' ) ); ?></h3>
-
+            
+            
 
 			<div id="wpcf7cf-text-entries">
 				<label>Choose the List</label>
-				<select id="list" class="select2">
-					<?php foreach ($lists as $list => $name):?>
-						<option value="<?php echo $list;?>"><?php echo $name;?></option>
+				<select id="list" class="select2" name="cf7-ctct[chosen-lists][]" multiple>
+					<?php foreach ($lists as $list => $name):
+                        $selected = in_array( $list, $settings['chosen-lists'] ) ? ' selected="selected" ' : ''; 
+                        ?>
+						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
 					<?php endforeach;?>
 				</select>	
 			</div>
@@ -86,11 +90,11 @@ class dd_cf7_form_admin_settings {
         }
 
 		// get saved fields and combine with WPCF7
-        if ( $saved_fields ) {
-            $all_fields = array_merge( $form_fields, array_keys( $saved_fields ) );
-        } else {
+        //if ( $saved_fields ) {
+        //    $all_fields = array_merge( $form_fields, array_keys( $saved_fields ) );
+        //} else {
             $all_fields = $form_fields;
-        }
+        //}
         // start setting up Constant Contact settings fields
         $fields = array(
             'ignore-field' => array(
@@ -107,6 +111,7 @@ class dd_cf7_form_admin_settings {
 		$ctct_fields = $this::ctct_fields;
 		
         // add all CF7 fields to Robly settings fields
+        
         foreach ( $all_fields as $this_field ) {
             $fields_options = NULL;
 			$fields_options .='<option value="">- - Select Field - -</option>';
@@ -133,21 +138,6 @@ class dd_cf7_form_admin_settings {
                 )
             );
         }
-
-        // add a hidden row to use for cloning
-        $fields['custom-field-template'] = array(
-            'label'     => '<input type="text" placeholder="Custom Field Name" name="custom-field-name" /> Field',
-            'field'     => sprintf(
-                '<label>
-                    <select name="cf7-ctct[fields][%1$s][]" class="select2-field">
-                        %2$s
-                    </select>
-                </label>
-                <p class="desc">Add contents of the <code><span class="name">%1$s</span></code> field to these Robly field(s)</p>',
-                'custom-field-template-name',
-                str_replace( 'selected="selected"', '', $fields_options )
-            )
-        );
 
         $rows = array();
 
