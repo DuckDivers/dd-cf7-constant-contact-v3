@@ -42,7 +42,7 @@ class dd_cf7_constant_contact_v3_Admin {
 
 	/**
 	 * Initialize the class and set its properties.
-	 *
+	 *S
 	 * @since    1.0.0
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
@@ -51,9 +51,21 @@ class dd_cf7_constant_contact_v3_Admin {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-
+        $this->admin_includes();
+        new dd_cf7_ctct_admin_settings;
+		new dd_cf7_form_admin_settings;
 	}
-
+    
+    /**
+     * Admin Includes for Plugin
+     *
+     * @since    1.0.0
+     */
+    private function admin_includes(){
+        include('class-dd-cf7-admin-settings.php');
+        //include('class-dd-cf7-oath.php');
+		include('class-dd-cf7-admin-form-settings.php');
+    }
 	/**
 	 * Register the stylesheets for the admin area.
 	 *
@@ -61,20 +73,8 @@ class dd_cf7_constant_contact_v3_Admin {
 	 */
 	public function enqueue_styles() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in dd_cf7_constant_contact_v3_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The dd_cf7_constant_contact_v3_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/dd-cf7-constant-contact-v3-admin.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style( 'dd-select2css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/css/select2.min.css', false, '4.0.10', 'all' );
 	}
 
 	/**
@@ -84,19 +84,8 @@ class dd_cf7_constant_contact_v3_Admin {
 	 */
 	public function enqueue_scripts() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in dd_cf7_constant_contact_v3_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The dd_cf7_constant_contact_v3_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/dd-cf7-constant-contact-v3-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'dd-select2', '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.min.js', array( 'jquery' ), '4.0.10', true );
 
 	}
 
