@@ -7,8 +7,8 @@
  */
 class dd_cf7_ctct_admin_settings {
 	
-	private $access_token = 'oDHvWLslLiYqBHkN3RYej4xsZYZR';
-	private $refresh_token = 'uQqWwVcAgTt5AyqupnfWz9VgwncNjKwClo6vB5iuAT';
+	private $access_token = '';
+	private $refresh_token = '';
 	private $api_url = 'https://api.cc.email/v3/';
 
 	public function __construct() {
@@ -81,30 +81,40 @@ class dd_cf7_ctct_admin_settings {
 		
 		echo '<pre>'; print_r($options); echo '</pre>';
 	
-		//$this->request_access_token();
+		if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
+			$this->performAuthorization();
+		}
 		
-		if (!isset($options['access_token'])) {
+		if (isset($_GET["code"]) && $_GET["code"]!="") {
 			
+			$options['oauth_performed'] = 1;
 			
-			//$code = $this->getAccessToken($options['api_callback'], $options['api_key'], $options['api_secret'], $this->access_token);
-			
-			//echo '<pre>'; print_r($code); echo '</pre>';
+			$tokenData = $this->getAccessToken($options['api_callback'], $options['api_key'], $options['api_secret'], $_GET["code"]);
 			
 			// Get Refresh Token and Add Access Token to Array
-			$add_token = array('refresh_token' => $this->refresh_token);
+			//$add_token = array('refresh_token' => $this->refresh_token);
 			
-			$options['refresh_token'] = $this->refresh_token;
-			$options['access_token'] = $this->access_token;
-			
+			$options['refresh_token'] = $tokenData->refresh_token;
+			$options['access_token'] = $tokenData->access_token;
+			$options['token_time'] = time();			
 			
 			update_option( 'cf7_ctct_settings', $options );
 			
+			wp_redirect("admin.php?page=dd_ctct");
+			
 		} else {
-			//if (!isset($options['access_token'])){
-//				$result = $this->refreshToken($options['refresh_token'], $options['api_key'], $options['api_secret']);
-//			
-//				echo '<pre>'; print_r($result); echo '</pre>';
-//			}
+			
+			$timediff = time()-$options['token_time'];			
+			if (!isset($options['access_token']) && $timediff>7200){
+				$tokenData = $this->refreshToken($options['refresh_token'], $options['api_key'], $options['api_secret']);
+				
+				$options['refresh_token'] = $tokenData->refresh_token;
+				$options['access_token'] = $tokenData->access_token;
+				$options['token_time'] = time();
+				
+				update_option('cf7_ctct_settings', $options );			
+				
+			}
 			
 			
 		}
@@ -169,7 +179,7 @@ class dd_cf7_ctct_admin_settings {
 		echo '<p class="description">' . __( 'This is the callback URL for Constant Contact Application', 'dd-cf7-plugin' ) . '</p>';
 
 	}
-	function request_access_token(){
+	function performAuthorization(){
 		// Create authorization URL
 		
 		$options = get_option('cf7_ctct_settings');
@@ -208,7 +218,7 @@ class dd_cf7_ctct_admin_settings {
 		// Make the call
 			$result = curl_exec($ch);
 			curl_close($ch);
-			return $result;
+			return json_decode($result);
 	}
 	
 	private function refreshToken($refreshToken, $clientId, $clientSecret) {
@@ -239,7 +249,7 @@ class dd_cf7_ctct_admin_settings {
 		// Make the call
 		$result = curl_exec($ch);
 		curl_close($ch);
-		return $result;
+		return json_decode($result);
 	}
 	
 	private function get_lists(){
