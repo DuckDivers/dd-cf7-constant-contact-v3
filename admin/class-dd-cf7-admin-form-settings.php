@@ -12,8 +12,6 @@ class dd_cf7_form_admin_settings {
 	public function __construct(){
 		add_filter( 'wpcf7_editor_panels', array ($this, 'add_cf7_panel' ));
         add_action( 'wpcf7_save_contact_form', array($this , 'save_contact_form' ));
-       // add_action( 'wpcf7_add_meta_boxes', array($this , 'wpcf7_add_meta_boxes' ));
-        add_action( 'wpcf7_save_contact_form', array($this, 'save_contact_form' ));
 	}
 	
 	const ctct_fields = array(
@@ -37,18 +35,7 @@ class dd_cf7_form_admin_settings {
 		}
 		return $panels;
 	}
-	// add WPCF7 metabox
 
-    function wpcf7_add_meta_boxes() {
-        add_meta_box(
-            'dd-ctct-settings',
-            'Constant Contact',
-            array($this, 'panel_callback'),
-            NULL,
-            'form',
-            'low'
-        );
-    }
 	public function panel_callback($form) {
 
 		$form_id = $_GET['post'];
@@ -67,14 +54,15 @@ class dd_cf7_form_admin_settings {
             
 
 			<div id="wpcf7cf-text-entries">
-				<label>Choose the List</label>
+				<label class="bold-label">Choose the List </label>
 				<select id="list" class="select2" name="cf7-ctct[chosen-lists][]" multiple>
 					<?php foreach ($lists as $list => $name):
                         $selected = in_array( $list, $settings['chosen-lists'] ) ? ' selected="selected" ' : ''; 
                         ?>
 						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
 					<?php endforeach;?>
-				</select>	
+				</select>
+				<p class="info">You may choose multiple lists, or use the ctct form tag on the form.</p>
 			</div>
 		</div>
 	    <?php
@@ -158,8 +146,7 @@ class dd_cf7_form_admin_settings {
             '<p class="cf7-ctct-message"></p>
             <table class="form-table cf7-ctct-table">
                 %1$s
-            </table>
-            <p><button class="cf7-robly-add-custom-field button-secondary" %2$s>Add a custom field</button></p>',
+            </table>',
             implode( '', $rows ),
             $ignore_form ? 'disabled' : ''
         );

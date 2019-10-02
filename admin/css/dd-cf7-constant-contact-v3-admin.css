@@ -47,3 +47,16 @@
 .card .checkboxes li {
 	margin: 0;
 }
+.bold-label {
+	font-weight: bold;
+	display: inline-block;
+	padding-right: 1rem;
+}
+#dd-ctct-panel label {
+    min-width: 150px;
+    display: inline-block;
+}
+
+#dd-ctct-panel select {
+    min-width: 200px;
+}

@@ -54,6 +54,7 @@ class dd_cf7_constant_contact_v3_Admin {
         $this->admin_includes();
         new dd_cf7_ctct_admin_settings;
 		new dd_cf7_form_admin_settings;
+		new dd_cf7_form_tag;
 	}
     
     /**
@@ -63,8 +64,8 @@ class dd_cf7_constant_contact_v3_Admin {
      */
     private function admin_includes(){
         include('class-dd-cf7-admin-settings.php');
-        //include('class-dd-cf7-oath.php');
 		include('class-dd-cf7-admin-form-settings.php');
+		include('class-dd-cf7-form-tag.php');
     }
 	/**
 	 * Register the stylesheets for the admin area.
