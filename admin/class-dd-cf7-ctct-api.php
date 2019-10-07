@@ -32,7 +32,8 @@ class dd_ctct_api {
 	public function check_auth(){
 		// Make sure mailing lists are in place
 		if ( null == (get_option('dd_cf7_mailing_lists')) || get_option('dd_cf7_mailing_lists') == '1' ){
-            if (!null == get_option('cf7_ctct_settings')) $this->get_lists();
+            $options = get_option('cf7_ctct_settings');
+            if (false !== $options && isset($options['access_token'])) $this->get_lists();
 		}
 		/**
 		 * TODO
