@@ -81,11 +81,12 @@ class dd_cf7_form_tag {
                                 <legend class="screen-reader-text"><?php echo esc_html( __( 'Choose the List', 'dd-cf7-plugin' ) ); ?></legend>
                                     <select id="listChoice" name="list-choice" onChange="set_value()" class="select2">
                                             <option value=""> - - Choose the List - - </option>
-                                        <?php foreach ($lists as $list => $name):?>
+                                        <?php asort($lists);
+                                            foreach ( $lists as $list => $name):?>
                                             <option value="<?php echo $list;?>"><?php echo $name;?></option>
                                         <?php endforeach;?>
                                     </select>
-                                    <em>Choose a list. The List ID will appear in the tag.</p>
+                                    <em>Choose a list. The List ID will appear in the tag.</em>
 								<input type="text" id="<?php echo esc_attr( $args['content'] . '-list' ); ?>" class="listvalue oneline option" name="list" style="display:none;" value="">
 									<script type="text/javascript">
 									function set_value(){
