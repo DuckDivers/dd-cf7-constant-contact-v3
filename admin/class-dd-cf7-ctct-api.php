@@ -42,6 +42,11 @@ class dd_ctct_api {
 		 */
 	}
 
+    private function get_admin_email(){
+        $options = get_option('cf7_ctct_settings');
+        return esc_attr($options['admin_email']);
+    }
+    
 	public function cf7_process_form(){
 		$submitted_values = $this->get_form_data();
 		if (false !== $submitted_values){
@@ -79,7 +84,7 @@ class dd_ctct_api {
 			echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				wp_mail(get_bloginfo('admin_email'), 'Constant Contat API Error', $body, $headers);
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
 		}
     }
     
@@ -156,7 +161,7 @@ class dd_ctct_api {
 		$body = 'While attempting to retrieve the constant contact lists. \r\n';
 		$body .= "cURL Error #:" . $err;
 		if ($err) {
-			wp_mail(get_bloginfo('admin_email'), 'Constant Contat API Error', $body);
+			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 			return false;
 	    } else {
 			$lists = json_decode($response, true);
@@ -166,9 +171,8 @@ class dd_ctct_api {
 				$lists_array[$list['list_id']] = $list['name'];
 			}
 			update_option( 'dd_cf7_mailing_lists', $lists_array);
-			error_log(print_r($lists_array, true));
 
-			return true;
+            return true;
 		}		
 	}
 	
@@ -197,7 +201,7 @@ class dd_ctct_api {
 		$body = 'While performing the check if email exists function, there was an error \r\n';
 		$body .= "cURL Error #:" . $err;
 		if ($err) {
-			wp_mail(get_bloginfo('admin_email'), 'Constant Contat API Error', $body);
+			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 	    }
         $ctct = json_decode($response);
         
@@ -206,13 +210,19 @@ class dd_ctct_api {
 				ob_start();
 				print_r($ctct, true);
 				$body = ob_get_clean();
-				error_log('Error Key: ', $body);
-				wp_mail(get_bloginfo('admin_email'), 'Constant Contat API Error', $body);
+				error_log('Error Key: ' . $body);
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 				return 'unauthorized';
 			} else {
 				return false;				
 			}
 		} else {
+                ob_start();
+				print_r($ctct, true);
+				$body = ob_get_clean();
+				error_log('Error Key: ' . $body);
+				wp_mail($this->get_admin_email(), 'Constant Contact API Response', $body);
+
 			return $ctct;
 		}
 	}
@@ -262,17 +272,27 @@ class dd_ctct_api {
 				"Host: api.cc.email",
 				"cache-control: no-cache"
 			  ),
-			));
-
+			));    
+        
 		$response = curl_exec($curl);
 		$err = curl_error($curl);
 		
 		curl_close($curl);
         
+        $ck = json_decode($response);
+        
+        if ($ck[0]->error_key == 'contacts.api.conflict') {
+            $body = 'The following contact had previously un-subscribed from one of your lists, and can not be added via this application.' . PHP_EOL;
+            $body .= '' . PHP_EOL;
+            $body .= print_r($json_data, true);
+			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+            return 'unsubscribed';
+        }
+        
 		$body = 'While trying to add a new email address, there was an error \r\n';
 		$body .= "cURL Error #:" . $err;
 		if ($err) {
-			wp_mail(get_bloginfo('admin_email'), 'Constant Contat API Error', $body);
+			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 			return false;
 	    } else {
           return true;
@@ -365,7 +385,7 @@ class dd_ctct_api {
 		$body = 'While trying to update an existing contact, there was an error \r\n';
 		$body .= "cURL Error #:" . $err;
 		if ($err) {
-			wp_mail(get_bloginfo('admin_email'), 'Constant Contat API Error', $body);
+			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 			return false;
 	    } else {
           return true;

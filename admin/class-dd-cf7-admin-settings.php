@@ -112,8 +112,8 @@ class dd_cf7_ctct_admin_settings {
 		} else {
 			
 			$logged_in = true;
-		
-			$timediff = time()-$options['token_time'];	
+		    $ct = (isset($options['token_time'])) ? $options['token_time'] : time() - 8000;
+			$timediff = time() - $ct;
             
             if (isset($options['access_token']) && $timediff>7200){
 				$this->refreshToken();								
@@ -204,7 +204,7 @@ class dd_cf7_ctct_admin_settings {
 		$value = isset( $options['admin_email'] ) ? $options['admin_email'] : get_bloginfo('admin_email');
 
 		// Field output.
-		echo '<input type="text" name="cf7_ctct_settings[admin_email]" class="regular-text admin_email_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
+		echo '<input type="email" name="cf7_ctct_settings[admin_email]" class="regular-text admin_email_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
 		echo '<p class="description">' . __( 'E-Mail Address to notify if there is an error.', 'dd-cf7-plugin' ) . '</p>';
 
 	}
