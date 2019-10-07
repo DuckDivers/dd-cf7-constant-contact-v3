@@ -84,46 +84,46 @@ class dd_cf7_ctct_admin_settings {
 		
 		$options = get_option( 'cf7_ctct_settings' );
 		$lists = get_option('dd_cf7_mailing_lists');
-	
-		if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
-			$this->performAuthorization();
-		}
-		
-		if (isset($_GET["code"]) && $_GET["code"]!="") {
-			
-			$tokenData = $this->getAccessToken($options['api_callback'], $options['api_key'], $options['api_secret'], $_GET["code"]);
-						
-			if (isset($tokenData->error_description)){
-				$options['error'] = $tokenData->error_description;
-			}
-			
-			$options['oauth_performed'] = 1;
-			$options['refresh_token'] = $tokenData->refresh_token;
-			$options['access_token'] = $tokenData->access_token;
-			$options['token_time'] = time();			
-			
-			update_option( 'cf7_ctct_settings', $options );
-			
-			$api_call = new dd_ctct_api;
-          	$api_call->get_lists();
-			
-			wp_redirect("admin.php?page=dd_ctct");
-			
-		} else {
-			
-			$logged_in = true;
-		    $ct = (isset($options['token_time'])) ? $options['token_time'] : time() - 8000;
-			$timediff = time() - $ct;
-            
-            if (isset($options['access_token']) && $timediff>7200){
-				$this->refreshToken();								
-			}	
-			
-		}
-		
+
+        if (false !== $options){
+	       if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
+                $this->performAuthorization();
+                }
+            if (isset($_GET["code"]) && $_GET["code"]!="") {
+
+                $tokenData = $this->getAccessToken($options['api_callback'], $options['api_key'], $options['api_secret'], $_GET["code"]);
+
+                if (isset($tokenData->error_description)){
+                    $options['error'] = $tokenData->error_description;
+                }
+
+                $options['oauth_performed'] = 1;
+                $options['refresh_token'] = $tokenData->refresh_token;
+                $options['access_token'] = $tokenData->access_token;
+                $options['token_time'] = time();			
+
+                update_option( 'cf7_ctct_settings', $options );
+
+                $api_call = new dd_ctct_api;
+                $api_call->get_lists();
+
+                wp_redirect("admin.php?page=dd_ctct");
+
+            } else {
+
+                $logged_in = true;
+                $ct = (isset($options['token_time'])) ? $options['token_time'] : time() - 8000;
+                $timediff = time() - $ct;
+
+                if (isset($options['access_token']) && $timediff>7200){
+                    $this->refreshToken();								
+                }	
+
+            }
+        }
 		
 		$message = ($logged_in) ? __('Disconnect from Constant Contact', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
-		
+
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
         echo '  <img src="'.plugin_dir_url(__FILE__) .'/img/CTCT_horizontal_logo.png">';
