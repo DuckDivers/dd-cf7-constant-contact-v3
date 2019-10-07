@@ -57,7 +57,7 @@ class dd_cf7_form_admin_settings {
 				<label class="bold-label">Choose the List </label>
 				<select id="list" class="select2" name="cf7-ctct[chosen-lists][]" multiple>
 					<?php foreach ($lists as $list => $name):
-                        $selected = in_array( $list, $settings['chosen-lists'] ) ? ' selected="selected" ' : ''; 
+                        $selected = (isset($settings['chosen-lists']) && in_array( $list, $settings['chosen-lists'] ) )? ' selected="selected" ' : ''; 
                         ?>
 						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
 					<?php endforeach;?>
@@ -77,28 +77,25 @@ class dd_cf7_form_admin_settings {
             }
         }
 
-		// get saved fields and combine with WPCF7
-        //if ( $saved_fields ) {
-        //    $all_fields = array_merge( $form_fields, array_keys( $saved_fields ) );
-        //} else {
-            $all_fields = $form_fields;
-        //}
-        // start setting up Constant Contact settings fields
-        $fields = array(
+		$all_fields = $form_fields;
+        
+		// start setting up Constant Contact settings fields
+        
+		$fields = array(
             'ignore-field' => array(
-                'label'     => 'Ignore this Contact Form',
+                'label'     => 'Used Shortcode?',
                 'field'     => sprintf(
                     '<input id="ignore-form" name="cf7-ctct[ignore-form]" value="1" %s type="checkbox" />
                     <p class="desc"><label for="ignore-form">%s</label></p>',
                     checked( $ignore_form, true, false ),
-                    'Don&rsquo;t send anything from this form to Constant Contact - IF you are using the [ctct] code on the form - you SHOULD check this box.'
+                    'If you are using the [ctct] code on the form - you SHOULD check this box. Any lists chosen above will have no effect on the list the users subscribe to.'
                 ),
             ),        
         );
 
 		$ctct_fields = $this::ctct_fields;
 		
-        // add all CF7 fields to Robly settings fields
+        // add all CF7 fields to CTCT settings fields
         
         foreach ( $all_fields as $this_field ) {
             $fields_options = NULL;
@@ -115,14 +112,13 @@ class dd_cf7_form_admin_settings {
                 'label'     => '<code>' . esc_html( $this_field ) . '</code> Field',
                 'field'     => sprintf(
                     '<label>
-                        <select name="cf7-ctct[fields][%1$s][]" %3$s class="select2-field">
+                        <select name="cf7-ctct[fields][%1$s][]" class="select2-field">
                             %2$s
                         </select>
                     </label>
                     <p class="desc">Add contents of the <code>%1$s</code> field to these Constant Contact field(s)</p>',
                     $this_field,
-                    $fields_options,
-                    $ignore_form ? 'disabled' : ''
+                    $fields_options
                 )
             );
         }

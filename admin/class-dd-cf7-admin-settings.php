@@ -7,15 +7,12 @@
  */
 class dd_cf7_ctct_admin_settings {
 	
-	private $access_token = '';
-	private $refresh_token = '';
 	private $api_url = 'https://api.cc.email/v3/';
 
 	public function __construct() {
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'init_settings'  ) );
-
 	}
 
 	public function add_admin_menu() {
@@ -66,10 +63,19 @@ class dd_cf7_ctct_admin_settings {
 			'cf7_ctct_settings',
 			'cf7_ctct_settings_section'
 		);
+        add_settings_field(
+			'admin_email',
+			__( 'Admin E-Mail', 'dd-cf7-plugin' ),
+			array( $this, 'render_admin_email_field' ),
+			'cf7_ctct_settings',
+			'cf7_ctct_settings_section'
+		);
 
 	}
 
 	public function page_layout() {
+		
+		$logged_in = false;
 
 		// Check required user capability
 		if ( !current_user_can( 'manage_options' ) )  {
@@ -78,8 +84,6 @@ class dd_cf7_ctct_admin_settings {
 		
 		$options = get_option( 'cf7_ctct_settings' );
 		$lists = get_option('dd_cf7_mailing_lists');
-		
-		echo '<pre>'; print_r($options); echo '</pre>';
 	
 		if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
 			$this->performAuthorization();
@@ -87,51 +91,62 @@ class dd_cf7_ctct_admin_settings {
 		
 		if (isset($_GET["code"]) && $_GET["code"]!="") {
 			
-			$options['oauth_performed'] = 1;
-			
 			$tokenData = $this->getAccessToken($options['api_callback'], $options['api_key'], $options['api_secret'], $_GET["code"]);
+						
+			if (isset($tokenData->error_description)){
+				$options['error'] = $tokenData->error_description;
+			}
 			
-			// Get Refresh Token and Add Access Token to Array
-			//$add_token = array('refresh_token' => $this->refresh_token);
-			
+			$options['oauth_performed'] = 1;
 			$options['refresh_token'] = $tokenData->refresh_token;
 			$options['access_token'] = $tokenData->access_token;
 			$options['token_time'] = time();			
 			
 			update_option( 'cf7_ctct_settings', $options );
 			
+			$api_call = new dd_ctct_api;
+          	$api_call->get_lists();
+			
 			wp_redirect("admin.php?page=dd_ctct");
 			
 		} else {
 			
-			$timediff = time()-$options['token_time'];			
-			if (!isset($options['access_token']) && $timediff>7200){
-				$tokenData = $this->refreshToken($options['refresh_token'], $options['api_key'], $options['api_secret']);
-				
-				$options['refresh_token'] = $tokenData->refresh_token;
-				$options['access_token'] = $tokenData->access_token;
-				$options['token_time'] = time();
-				
-				update_option('cf7_ctct_settings', $options );			
-				
-			}
-			
+			$logged_in = true;
+		
+			$timediff = time()-$options['token_time'];	
+            
+            if (isset($options['access_token']) && $timediff>7200){
+				$this->refreshToken();								
+			}	
 			
 		}
+		
+		
+		$message = ($logged_in) ? __('Disconnect from Constant Contact', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
 		
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
         echo '  <img src="'.plugin_dir_url(__FILE__) .'/img/CTCT_horizontal_logo.png">';
         echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
         echo '<div class="card">' . "\n";
+		// Check for API Errors
+		if (isset($options['error']) && !empty($options['error'])) {
+			echo '<h4>' . __('There has been an error processing your credentials', 'dd-cf7-plugin'). '</h4>';	
+			echo '<div class="alert-danger"><p>' . $options['error'] . '</p></div>';
+		}
         echo '<p>';
         _e('These fields are required to connect this application to your Constant Contact account. You must set up a Constant Contact developer account if you don&rsquo;t already have one.' , 'dd-cf7-plugin');
-        echo '<a href="https://v3.developer.constantcontact.com/api_guide/getting_started.html" target="_blank">' . __('Constant Contact Guide', 'dd-cf7-plugin') . '</a>';
+        echo ' <a href="https://v3.developer.constantcontact.com/api_guide/getting_started.html" target="_blank">' . __('Constant Contact Guide', 'dd-cf7-plugin') . '</a>';
         echo '</p>';
+		if ($logged_in){ 
+			echo '<p><span class="dashicons dashicons-yes success" style="color: green;"></span> ';
+			_e('You are connected to Constant Contact', 'dd-cf7-plugin');
+			echo '</p>';
+		}
         echo '	<form action="options.php" method="post">' . "\n";
 		settings_fields( 'dd_cf7_ctct' );
 		do_settings_sections( 'cf7_ctct_settings' );
-		submit_button(__('Connect to Constant Contact', 'dd-cf7-plugin'));
+		submit_button($message);
     
 		echo '	</form>' . "\n";
         echo '</div>' ."\n";
@@ -179,6 +194,20 @@ class dd_cf7_ctct_admin_settings {
 		echo '<p class="description">' . __( 'This is the callback URL for Constant Contact Application', 'dd-cf7-plugin' ) . '</p>';
 
 	}
+    
+    function render_admin_email_field() {
+
+		// Retrieve data from the database.
+		$options = get_option( 'cf7_ctct_settings' );
+
+		// Set default value.
+		$value = isset( $options['admin_email'] ) ? $options['admin_email'] : get_bloginfo('admin_email');
+
+		// Field output.
+		echo '<input type="text" name="cf7_ctct_settings[admin_email]" class="regular-text admin_email_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
+		echo '<p class="description">' . __( 'E-Mail Address to notify if there is an error.', 'dd-cf7-plugin' ) . '</p>';
+
+	}
 	function performAuthorization(){
 		// Create authorization URL
 		
@@ -189,9 +218,12 @@ class dd_cf7_ctct_admin_settings {
 		wp_redirect($authURL);
 		
 	}
-	// Auth Token = Jtt1gfMaHP8oaI2AWV9k9UtX4PZl_Uzig82dLwDJ
 	
 	private function getAccessToken($redirectURI, $clientId, $clientSecret, $code) {
+		$options = get_option('cf7_ctct_settings');
+		$options['error'] = '';
+		update_option('cf7_ctct_settings', $options);
+
 		// Use cURL to get access token and refresh token
 		$ch = curl_init();
 
@@ -221,8 +253,12 @@ class dd_cf7_ctct_admin_settings {
 			return json_decode($result);
 	}
 	
-	private function refreshToken($refreshToken, $clientId, $clientSecret) {
-		
+	public function refreshToken() {
+		$options = get_option( 'cf7_ctct_settings' );
+		$refreshToken = $options['refresh_token'];
+		$clientId = $options['api_key'];
+		$clientSecret = $options['api_secret'];
+
 		// Use cURL to get a new access token and refresh token
 		$ch = curl_init();
 
@@ -249,82 +285,15 @@ class dd_cf7_ctct_admin_settings {
 		// Make the call
 		$result = curl_exec($ch);
 		curl_close($ch);
-		return json_decode($result);
+		error_log($result);
+		$tokenData = json_decode($result);
+
+		$options['refresh_token'] = $tokenData->refresh_token;
+		$options['access_token'] = $tokenData->access_token;
+		$options['token_time'] = time();
+
+		update_option('cf7_ctct_settings', $options );
+			
 	}
 	
-	private function get_lists(){
-		$curl = curl_init();
-
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => $this->api_url . "contact_lists",
-		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_ENCODING => "",
-		  CURLOPT_MAXREDIRS => 10,
-		  CURLOPT_TIMEOUT => 30,
-		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => "GET",
-		  CURLOPT_HTTPHEADER => array(
-			"Accept: */*",
-			"Accept-Encoding: gzip, deflate",
-			"Authorization: Bearer ". $this->access_token,
-			"Cache-Control: no-cache",
-			"Connection: keep-alive",
-			"Content-Type: application/json",
-			"cache-control: no-cache"
-		  ),
-		));
-
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-
-		curl_close($curl);
-
-		if ($err) {
-		  echo "cURL Error #:" . $err;
-		} else {
-
-			$lists = json_decode($response, true);
-			
-			$lists_array = array();
-			
-			foreach ($lists['lists'] as $list){
-				
-				$lists_array[$list['list_id']] = $list['name'];
-		
-			}
-			
-			update_option( 'dd_cf7_mailing_lists', $lists_array);
-		}		
-	}
-	
-	private function check_email_exists($email){
-		$curl = curl_init();
-
-		curl_setopt_array($curl, array(
-		  //CURLOPT_URL => $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships%0A&include_count=false",
-		  CURLOPT_URL => "https://api.cc.email/v3/contacts?email=howard80424%40gmail.com&include=street_addresses,list_memberships",
-		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_ENCODING => "",
-		  CURLOPT_MAXREDIRS => 10,
-		  CURLOPT_TIMEOUT => 30,
-		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => "GET",
-		  CURLOPT_HTTPHEADER => array(
-			"Authorization: Bearer " . $this->access_token,
-			"Content-Type: application/json",
-			"cache-control: no-cache"
-		  ),
-		));
-
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-
-		curl_close($curl);
-
-		if ($err) {
-		  echo "cURL Error #:" . $err;
-		} else {
-		  echo $response;
-		}
-	}
 }
