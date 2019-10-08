@@ -60,7 +60,9 @@ class dd_ctct_api {
         if ( false === ($submitted_values = get_transient('ctct_to_process') ) ) {
             return;
         } 		
-
+        
+        $reauth = new dd_cf7_ctct_admin_settings;
+        
         $submitted_values = maybe_unserialize(get_transient('ctct_to_process'));
                 
         $exists = $this->check_email_exists($submitted_values['email_address']);
@@ -68,7 +70,6 @@ class dd_ctct_api {
 		if ($exists == 'unauthorized'){
 			if ($this->c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
-			$reauth = new dd_cf7_ctct_admin_settings;
 			$reauth->refreshToken();	
 	        $exists = $this->check_email_exists($submitted_values['email_address']);
 			$this->c++;
@@ -79,7 +80,9 @@ class dd_ctct_api {
         }
 		
 		// If API Call Failed
-		if (false == $ctct){
+        
+        if (isset($ctct)){        
+		  if (false == $ctct){
 			$body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually.</p>';
 			ob_start();
 			echo '<pre>'; print_r($submitted_values); echo '</pre>';
@@ -87,6 +90,16 @@ class dd_ctct_api {
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
 		}
+        else {
+            $reauth->refreshToken();
+            $body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually - Line 95 ctct-api.php.</p>';
+			ob_start();
+			echo '<pre>'; print_r($submitted_values); echo '</pre>';
+			$body .= ob_get_clean();
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
+            }
+        }    
     }
     
 	public function get_form_data(){
@@ -381,7 +394,7 @@ class dd_ctct_api {
 
         $response = curl_exec($curl);
 		// For Debug
-		// error_log($response);
+		//error_log($response);
         $err = curl_error($curl);
 		$body = 'While trying to update an existing contact, there was an error \r\n';
 		$body .= "cURL Error #:" . $err;

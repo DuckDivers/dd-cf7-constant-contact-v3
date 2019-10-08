@@ -87,7 +87,7 @@ class dd_cf7_ctct_admin_settings {
 
         if (false !== $options){
 	       if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
-                $this->performAuthorization();
+                if (!isset($options['access_token'])) $this->performAuthorization();
                 }
             if (isset($_GET["code"]) && $_GET["code"]!="") {
 
@@ -107,7 +107,7 @@ class dd_cf7_ctct_admin_settings {
                 $api_call = new dd_ctct_api;
                 $api_call->get_lists();
 
-                wp_redirect("admin.php?page=dd_ctct");
+                echo '<script>window.location="admin.php?page=dd_ctct"</script>';
 
             } else {
 
@@ -210,13 +210,12 @@ class dd_cf7_ctct_admin_settings {
 	}
 	function performAuthorization(){
 		// Create authorization URL
-		
+        
 		$options = get_option('cf7_ctct_settings');
 		$baseURL = "https://api.cc.email/v3/idfed";
 		$authURL = $baseURL . "?client_id=" . $options['api_key'] . "&scope=account_update+contact_data&response_type=code" . "&redirect_uri=" . urlencode($options['api_callback']);
-
-		wp_redirect($authURL);
-		
+        echo '<script>window.location="'.$authURL.'"</script>';
+		//wp_redirect($authURL);	
 	}
 	
 	private function getAccessToken($redirectURI, $clientId, $clientSecret, $code) {
