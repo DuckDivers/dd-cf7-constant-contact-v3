@@ -45,7 +45,7 @@ class dd_cf7_form_tag {
         ob_start();?>
         
         <span class="wpcf7-form-control-wrap <?php echo $tag->name;?>">
-            <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $atts['id'];?>">
+            <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $inputid;?>">
                 <span class="wpcf7-list-item-label">
                 <input id="<?php echo $inputid;?>" type="checkbox" name="ctct-<?php echo $tag->name;?>" value="<?php echo $listid;?>" <?php checked($checked, $listid);?>>
                 <label for=<?php echo $inputid;?>><?php echo $atts['message'];?></label></span>
