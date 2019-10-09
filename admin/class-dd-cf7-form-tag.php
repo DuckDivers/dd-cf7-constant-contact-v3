@@ -75,25 +75,32 @@ class dd_cf7_form_tag {
                             </tr>
                             <?php $lists = get_option('dd_cf7_mailing_lists');?>
                             <tr>
-                            <th scope="row"><?php echo esc_html( __( 'Choose the List', 'dd-cf7-plugin' ) ); ?></th>
-                            <td>
-                                <fieldset>
-                                <legend class="screen-reader-text"><?php echo esc_html( __( 'Choose the List', 'dd-cf7-plugin' ) ); ?></legend>
-                                    <select id="listChoice" name="list-choice" onChange="set_value()" class="select2">
-                                            <option value=""> - - Choose the List - - </option>
-                                        <?php asort($lists);
-                                            foreach ( $lists as $list => $name):?>
-                                            <option value="<?php echo $list;?>"><?php echo $name;?></option>
-                                        <?php endforeach;?>
-                                    </select>
-                                    <em>Choose a list. The List ID will appear in the tag.</em>
-								<input type="text" id="<?php echo esc_attr( $args['content'] . '-list' ); ?>" class="listvalue oneline option" name="list" style="display:none;" value="">
-									<script type="text/javascript">
-									function set_value(){
-										var chosenList = jQuery('#listChoice').val();
-										jQuery('input[name="list"]').val(chosenList);
-									}	
-									</script></td>
+                                <?php if (false !== $lists) :?>
+                                <th scope="row"><?php echo esc_html( __( 'Choose the List', 'dd-cf7-plugin' ) ); ?></th>
+                                <td>
+                                    <fieldset>
+                                    <legend class="screen-reader-text"><?php echo esc_html( __( 'Choose the List', 'dd-cf7-plugin' ) ); ?></legend>
+                                        <select id="listChoice" name="list-choice" onChange="set_value()" class="select2">
+                                                <option value=""> - - Choose the List - - </option>
+                                            <?php asort($lists);
+                                                foreach ( $lists as $list => $name):?>
+                                                <option value="<?php echo $list;?>"><?php echo $name;?></option>
+                                            <?php endforeach;?>
+                                        </select>
+                                        <em>Choose a list. The List ID will appear in the tag.</em>
+                                    <input type="text" id="<?php echo esc_attr( $args['content'] . '-list' ); ?>" class="listvalue oneline option" name="list" style="display:none;" value="">
+                                        <script type="text/javascript">
+                                        function set_value(){
+                                            var chosenList = jQuery('#listChoice').val();
+                                            jQuery('input[name="list"]').val(chosenList);
+                                        }	
+                                        </script></td>
+                                <?php else:?>
+                                    <th></th>
+                                    <td><h5>You must enter your constant contact settings before completing these fields</h5>
+                                        <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
+                                    </td>
+                                <?php endif;?>    
 								</tr>
 								<tr>
 									<th scope="row"><label for="ctct_label"><?php echo esc_html( __( 'Checkbox Label (optional)', 'dd-cf7-plugin' ) ); ?></label>

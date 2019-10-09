@@ -51,8 +51,7 @@ class dd_cf7_form_admin_settings {
 		<div class="wpcf7cf-inner-container">
 			<h3><?php echo esc_html( __( 'Constant Contact', 'dd-cf7-plugin' ) ); ?></h3>
             
-            
-
+            <?php if (false !== $lists) :?>
 			<div id="wpcf7cf-text-entries">
 				<label class="bold-label">Choose the List </label>
 				<select id="list" class="select2" name="cf7-ctct[chosen-lists][]" multiple>
@@ -64,6 +63,10 @@ class dd_cf7_form_admin_settings {
 				</select>
 				<p class="info">You may choose multiple lists, or use the ctct form tag on the form.</p>
 			</div>
+            <?php else :?>
+            <h3>You must enter your constant contact settings before completing these fields</h3>
+            <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
+            <?php endif;?>
 		</div>
 	    <?php
         
