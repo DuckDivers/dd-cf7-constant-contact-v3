@@ -224,7 +224,7 @@ class dd_ctct_api {
 				ob_start();
 				print_r($ctct, true);
 				$body = ob_get_clean();
-				error_log('Error Key: ' . $body);
+				error_log('Error Key API 227: ' . $body);
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 				return 'unauthorized';
 			} else {
@@ -234,7 +234,7 @@ class dd_ctct_api {
                 ob_start();
 				print_r($ctct, true);
 				$body = ob_get_clean();
-				error_log('Error Key: ' . $body);
+				error_log('Error Key API Line 237: ' . $body);
 				wp_mail($this->get_admin_email(), 'Constant Contact API Response', $body);
 
 			return $ctct;
