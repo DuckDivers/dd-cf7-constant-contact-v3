@@ -66,7 +66,7 @@ class dd_ctct_api {
         $submitted_values = maybe_unserialize(get_transient('ctct_to_process'));
                 
         $exists = $this->check_email_exists($submitted_values['email_address']);
-		
+        
 		if ($exists == 'unauthorized'){
 			if ($this->c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
@@ -78,7 +78,6 @@ class dd_ctct_api {
 		} else {
 			$ctct = $this->update_contact($submitted_values, $exists);
         }
-		
 		// If API Call Failed
         
         if (isset($ctct)){        
@@ -89,16 +88,7 @@ class dd_ctct_api {
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
-		}
-        else {
-            $reauth->refreshToken();
-            $body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually - Line 95 ctct-api.php.</p>';
-			ob_start();
-			echo '<pre>'; print_r($submitted_values); echo '</pre>';
-			$body .= ob_get_clean();
-			$headers = array('Content-Type: text/html; charset=UTF-8');
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
-            }
+            } 
         }    
     }
     
@@ -121,11 +111,13 @@ class dd_ctct_api {
 		if (isset($settings['ignore-form'])){
 			$ctct_list = array();
 			foreach($posted_data as $key => $value){
-				$ctct = explode('-', $key);
-				if($ctct[0] == 'ctct'){
-					 $ctct_list[] = $value;
+				if($key == 'ctct-list'){
+                     foreach ($value as $listid){
+					   $ctct_list[] = $listid;
+                     }
 				}
-			}
+            }
+            
 			if (!empty($ctct_list)){
 				$submitted_values['chosen-lists'] = $ctct_list;
 			} else {
@@ -219,11 +211,12 @@ class dd_ctct_api {
 	    }
         $ctct = json_decode($response);
         
-		if (empty($ctct->contacts)){
-			if (isset($ctct->error_key)){
+        if (count($ctct->contacts) == 0){
+            if (count ($ctct->error_key) !== 0 ){
 				ob_start();
 				print_r($ctct, true);
 				$body = ob_get_clean();
+                $body .= 'Unauthorized Response';
 				error_log('Error Key API 227: ' . $body);
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 				return 'unauthorized';
@@ -231,13 +224,7 @@ class dd_ctct_api {
 				return false;				
 			}
 		} else {
-                ob_start();
-				print_r($ctct, true);
-				$body = ob_get_clean();
-				error_log('Error Key API Line 237: ' . $body);
-				wp_mail($this->get_admin_email(), 'Constant Contact API Response', $body);
-
-			return $ctct;
+            return $ctct;
 		}
 	}
 	
@@ -340,6 +327,7 @@ class dd_ctct_api {
 		 * @param $ctct_data = response from CTCT with Contact info 
          * @since    1.0.0
          */
+        
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
 
@@ -349,7 +337,7 @@ class dd_ctct_api {
         foreach ($list_memberships as $key=>$value){
             $lists[] = $value;
         }
-
+        
         $deets = $this->build_ctct_array($ctct, $this->details, $submitted_values);
         $sa = $this->build_ctct_array($ctct_addr, $this->street_address, $submitted_values);
 
@@ -363,7 +351,7 @@ class dd_ctct_api {
             "update_source" => "Contact",
             )
          );
-
+        
         $contact_id = $ctct_data->contacts[ 0 ]->contact_id;
 
         $content_length = strlen( json_encode( $json_data ) );
@@ -413,7 +401,7 @@ class dd_ctct_api {
      * @param $item = array of fields being submitted to ctct - details or addresses
      * @param $submitted_values = cf7 form field submissions from transient
      * @since    1.0.0
-     */
+     */         
         foreach ( $item as $key => $val ) {
             if ( isset( $ctct->$key ) ) {
                 if ( ( isset( $submitted_values[ $key ] ) && $submitted_values[ $key ] == $ctct->$key ) || !isset($submitted_values[$key])) {
@@ -431,7 +419,6 @@ class dd_ctct_api {
                 }
             }
         }
-
         return $item;
     }
 }
