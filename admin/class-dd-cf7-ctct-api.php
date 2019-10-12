@@ -71,8 +71,7 @@ class dd_ctct_api {
 			if ($this->c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
 			$reauth->refreshToken();	
-	        $exists = $this->check_email_exists($submitted_values['email_address']);
-			$this->c++;
+	        $this->push_to_constant_contact();
 		} elseif (false == $exists){
 			$ctct = $this->create_new_subscription($submitted_values);
 		} else {
@@ -211,14 +210,14 @@ class dd_ctct_api {
 	    }
         $ctct = json_decode($response);
         
-        if (count($ctct->contacts) == 0){
-            if (count ($ctct->error_key) !== 0 ){
-				ob_start();
-				print_r($ctct, true);
-				$body = ob_get_clean();
-                $body .= 'Unauthorized Response';
-				error_log('Error Key API 227: ' . $body);
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+        if (!isset($ctct->contacts) ){
+            if ( isset($ctct->error_key) ){
+				//ob_start();
+//				var_dump($ctct);
+//                $body = 'Unauthorized Response';
+//				$body .= ob_get_clean();
+//                error_log('Error Key API 227: ' . $body);
+//				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 				return 'unauthorized';
 			} else {
 				return false;				
