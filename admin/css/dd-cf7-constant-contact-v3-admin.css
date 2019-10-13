@@ -60,3 +60,11 @@
 #dd-ctct-panel select {
     min-width: 200px;
 }
+.dd-ctct-submit-wrapper {
+	display: -ms-flexbox;
+	display: flex;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+    justify-content: space-between;
+	width: 100%;
+}

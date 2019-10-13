@@ -76,6 +76,11 @@ class dd_cf7_ctct_admin_settings {
 
 	public function page_layout() {
 		
+		if (isset($_GET['action']) && $_GET['action'] == 'disconnect'){
+                delete_option( 'cf7_ctct_settings' );
+                echo '<script>window.location="admin.php?page=dd_ctct"</script>';
+		}
+		
 		$logged_in = false;
 
 		// Check required user capability
@@ -123,7 +128,7 @@ class dd_cf7_ctct_admin_settings {
             }
         }
 		
-		$message = ($logged_in) ? __('Disconnect from Constant Contact', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
+		$message = ($logged_in) ? __('Update Settings', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
 
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
@@ -147,7 +152,15 @@ class dd_cf7_ctct_admin_settings {
         echo '	<form action="options.php" method="post">' . "\n";
 		settings_fields( 'dd_cf7_ctct' );
 		do_settings_sections( 'cf7_ctct_settings' );
+		
+		echo '<div class="dd-ctct-submit-wrapper">';
+		if ($logged_in){
+			$m2 = sprintf(__("'Please confirm you wish to disconnect from Constant Contact and remove API Keys from this application'", 'dd-cf7-plugin'));
+			$path = 'admin.php?page=dd_ctct&action=disconnect';
+			echo '<p class="submit"><a href="'.admin_url($path).'" onclick="return confirm('.$m2.');" class="button button-link-delete">Disconnect</a></p>';
+		}
 		submit_button($message);
+		echo '</div>';
     
 		echo '	</form>' . "\n";
         echo '</div>' ."\n";
@@ -293,7 +306,8 @@ class dd_cf7_ctct_admin_settings {
 		$options['token_time'] = time();
 
 		update_option('cf7_ctct_settings', $options );
-			
+		
+		die();		
 	}
     
     public function add_enabled_icon() {

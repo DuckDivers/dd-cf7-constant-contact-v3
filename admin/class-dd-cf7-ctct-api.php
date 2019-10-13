@@ -210,14 +210,8 @@ class dd_ctct_api {
 	    }
         $ctct = json_decode($response);
         
-        if (!isset($ctct->contacts) ){
-            if ( isset($ctct->error_key) ){
-				//ob_start();
-//				var_dump($ctct);
-//                $body = 'Unauthorized Response';
-//				$body .= ob_get_clean();
-//                error_log('Error Key API 227: ' . $body);
-//				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+        if (empty($ctct->contacts) || !isset($ctct->contacts) ){
+            if ( isset ($ctct->error_key) ){
 				return 'unauthorized';
 			} else {
 				return false;				
@@ -280,13 +274,16 @@ class dd_ctct_api {
 		curl_close($curl);
         
         $ck = json_decode($response);
-        
-        if ($ck[0]->error_key == 'contacts.api.conflict') {
-            $body = 'The following contact had previously un-subscribed from one of your lists, and can not be added via this application.' . PHP_EOL;
-            $body .= '' . PHP_EOL;
-            $body .= print_r($json_data, true);
-			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
-            return 'unsubscribed';
+
+		
+        if (is_array($ck) ){
+			if ($ck[0]->error_key == 'contacts.api.conflict') {
+				$body = 'The following contact had previously un-subscribed from one of your lists, and can not be added via this application.' . PHP_EOL;
+				$body .= '' . PHP_EOL;
+				$body .= print_r($json_data, true);
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+				return 'unsubscribed';
+			}
         }
         
 		$body = 'While trying to add a new email address, there was an error \r\n';
@@ -326,7 +323,15 @@ class dd_ctct_api {
 		 * @param $ctct_data = response from CTCT with Contact info 
          * @since    1.0.0
          */
-        
+		
+//		ob_start();
+//		echo ' Submitted Values: ';
+//		echo '<pre>'; print_r($submitted_values); echo '</pre>';
+//        echo 'CTCT Data: ';
+//		print_r($ctct_data);
+//		$body = ob_get_clean();
+//		error_log($body);
+		
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
 
