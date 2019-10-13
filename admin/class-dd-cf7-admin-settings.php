@@ -13,6 +13,7 @@ class dd_cf7_ctct_admin_settings {
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'init_settings'  ) );
+        add_action( 'admin_footer', array( $this, 'add_enabled_icon' ) );
 	}
 
 	public function add_admin_menu() {
@@ -293,6 +294,78 @@ class dd_cf7_ctct_admin_settings {
 
 		update_option('cf7_ctct_settings', $options );
 			
+	}
+    
+    public function add_enabled_icon() {
+		global $pagenow, $plugin_page;
+
+		if ( empty( $plugin_page ) || empty( $pagenow ) ) {
+			return;
+		}
+
+		if ( $pagenow === 'admin.php' && $plugin_page === 'wpcf7' && ! isset( $_GET['action'] ) && class_exists( 'WPCF7_ContactForm' ) ) {
+
+			// Get the forms
+			$forms = WPCF7_ContactForm::find();
+
+			// If there are no forms, return
+			if ( empty( $forms ) ) {
+				return;
+			}
+
+			// Otherwise, loop through and see which ones have settings
+			// for Constant Contact integration.
+			$activeforms = array();
+
+			foreach ( $forms as &$form ) {
+				$cf_id = method_exists( $form, 'id' ) ? $form->id() : $form->id;
+                
+				$is_active = get_post_meta($cf_id, '_ctct_cf7');
+				
+				if ( ! empty( $is_active ) /*&& isset( $is_active[0]['ignore_form'] )*/ ) {
+					$activeforms[] = $cf_id;
+				}
+			}
+		
+			// Reset the post data, possibly modified by `WPCF7_ContactForm::find()`.
+			wp_reset_postdata();
+
+			// If there are no forms with CTCT integration, get outta here
+			if ( empty( $activeforms ) ) {
+				return;
+			}
+
+			// Otherwise, add the icon to each row with integration.
+			?>
+			<style>
+				.ctct_enabled {
+					position: absolute;
+					background: url('<?php echo plugins_url('img/ctct-favicon.png',__FILE__); ?>') right top no-repeat;
+					height: 22px;
+					width: 30px;
+					margin-left: 10px;
+					background-size: contain;
+				}
+			</style>
+			<script>
+				jQuery( document ).ready( function ( $ ) {
+					// Convert forms array into JSON array
+					$activeforms = $.parseJSON( '<?php echo json_encode($activeforms); ?>' );
+
+					// For each visible forms row
+					$( 'table.posts tr' ).each( function () {
+						// Get the ID of the row
+						id = parseInt( $( '.check-column input', $( this ) ).val() );
+
+						// If the row is in the $activeforms array, add the icon span
+						if ( $activeforms.indexOf( id ) >= 0 ) {
+							$( 'td a.row-title', $( this ) ).append( '<span class="ctct_enabled" title="Constant Contact integration is enabled for this form."></span>' );
+						}
+					} );
+				} );
+			</script>
+			<?php
+		}
 	}
 	
 }
