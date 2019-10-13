@@ -13,7 +13,7 @@ class dd_cf7_ctct_admin_settings {
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'init_settings'  ) );
-        add_action( 'admin_footer', array( $this, 'add_enabled_icon' ) );
+        	add_action( 'admin_footer', array( $this, 'add_enabled_icon' ) );
 	}
 
 	public function add_admin_menu() {
@@ -298,7 +298,7 @@ class dd_cf7_ctct_admin_settings {
 		// Make the call
 		$result = curl_exec($ch);
 		curl_close($ch);
-		error_log($result);
+		
 		$tokenData = json_decode($result);
 
 		$options['refresh_token'] = $tokenData->refresh_token;
@@ -307,7 +307,7 @@ class dd_cf7_ctct_admin_settings {
 
 		update_option('cf7_ctct_settings', $options );
 		
-		die();		
+		return;		
 	}
     
     public function add_enabled_icon() {
