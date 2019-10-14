@@ -323,15 +323,7 @@ class dd_ctct_api {
 		 * @param $ctct_data = response from CTCT with Contact info 
          * @since    1.0.0
          */
-		
-//		ob_start();
-//		echo ' Submitted Values: ';
-//		echo '<pre>'; print_r($submitted_values); echo '</pre>';
-//        echo 'CTCT Data: ';
-//		print_r($ctct_data);
-//		$body = ob_get_clean();
-//		error_log($body);
-		
+	
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
 
