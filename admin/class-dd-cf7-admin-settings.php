@@ -383,19 +383,12 @@ class dd_cf7_ctct_admin_settings {
 		}
 	}
 	public function check_logged_in($access_token){
-        $args = array(
-            "headers" => array(
-                "Accept" => "*/*",
-                "Accept-Encoding" => "gzip, deflate",
-                "Authorization" => "Bearer {$access_token}",
-                "Content-Type" => "application/json",
-            )
-        );
-
-        $response = wp_remote_get('https://api.cc.email/v3/contact_lists', $args);
-        $code = wp_remote_retrieve_response_code($response);
-        $error = null;
-        
+        $code = $this->get_code_status($access_token);
+        if ($code == 401) {
+            $this->refreshToken();
+            $code = $this->get_code_status($access_token);
+        }
+        $error = null;        
         switch ($code){
             case 200:
                 $logged_in = true;
@@ -419,10 +412,23 @@ class dd_cf7_ctct_admin_settings {
         }
 		$message = ($logged_in) ? __('Update Settings', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
         
-        if ($code == 401) $this->refreshToken();
-        
         $check = array('message'=>$message, 'error'=>$error, 'logged_in' => $logged_in);
         
         return $check;
+    }
+    public function get_code_status($access_token){
+        $args = array(
+            "headers" => array(
+                "Accept" => "*/*",
+                "Accept-Encoding" => "gzip, deflate",
+                "Authorization" => "Bearer {$access_token}",
+                "Content-Type" => "application/json",
+            )
+        );
+
+        $response = wp_remote_get('https://api.cc.email/v3/contact_lists', $args);
+        $code = wp_remote_retrieve_response_code($response);
+        
+        return $code;
     }
 }
