@@ -16,7 +16,7 @@
  * Plugin Name:       Contact Form 7 to Constant Contact V3
  * Plugin URI:        https://www.duckdiverllc.com
  * Description:       Connect Contact form 7 and Constant Contact where it appends existing users - allows for multiple list subscriptions, and conditional subscribe checkbox.
- * Version:           0.0.7
+ * Version:           0.0.8
  * Author:            Howard Ehrenberg
  * Author URI:        https://www.howardehrenberg.com
  * License:           GPL-2.0+

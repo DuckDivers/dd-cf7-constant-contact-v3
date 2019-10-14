@@ -419,7 +419,7 @@ class dd_cf7_ctct_admin_settings {
         }
 		$message = ($logged_in) ? __('Update Settings', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
         
-        if ($error == 401) $this->refreshToken();
+        if ($code == 401) $this->refreshToken();
         
         $check = array('message'=>$message, 'error'=>$error, 'logged_in' => $logged_in);
         
