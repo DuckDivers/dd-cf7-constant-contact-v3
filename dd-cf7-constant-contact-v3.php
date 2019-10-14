@@ -31,7 +31,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'DD_CF7_CONSTANT_CONTACT_V3_VERSION', '0.0.7' );
+define( 'DD_CF7_CONSTANT_CONTACT_V3_VERSION', '0.0.8' );
 
 /**
  * The code that runs during plugin activation.
