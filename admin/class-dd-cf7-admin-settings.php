@@ -386,7 +386,8 @@ class dd_cf7_ctct_admin_settings {
         $code = $this->get_code_status($access_token);
         if ($code == 401) {
             $this->refreshToken();
-            $code = $this->get_code_status($access_token);
+    		$options = get_option( 'cf7_ctct_settings' );
+            $code = $this->get_code_status($options['access_token']);
         }
         $error = null;        
         switch ($code){
