@@ -90,6 +90,8 @@ class dd_cf7_ctct_admin_settings {
 		
 		$options = get_option( 'cf7_ctct_settings' );
 		$lists = get_option('dd_cf7_mailing_lists');
+        $check = array();
+        $error = null;
 
         if (false !== $options){
 	       if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
@@ -120,13 +122,19 @@ class dd_cf7_ctct_admin_settings {
                 $ct = (isset($options['token_time'])) ? $options['token_time'] : time() - 8000;
                 $timediff = time() - $ct;
 
-                if (isset($options['access_token']) && $timediff>7200){
+                if (!empty($options['access_token']) && !empty($options['refresh_token']) && $timediff>7200){
                     $this->refreshToken();								
-                }	
+                } 
             }
         }
-		
-        $check = $this->check_logged_in($options['access_token']);
+		if (!empty($options['access_token'])) {        
+            $check = $this->check_logged_in($options['access_token']);
+        } else {
+            $check['error'] = __('There is a problem with the connection. Please Reauthorize', 'dd-cf7-plugin');
+            $check['logged_in'] = false;
+            $check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
+            $error = true;
+        }
             
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
@@ -135,12 +143,12 @@ class dd_cf7_ctct_admin_settings {
         echo '<div class="card">' . "\n";
 		// Check for API Errors
 		if (isset($options['error']) && !empty($options['error'])) {
-			echo '<h4>' . __('There has been an error processing your credentials', 'dd-cf7-plugin'). '</h4>';	
-			echo '<div class="alert-danger"><p>' . $options['error'] . '</p></div>';
+			echo '<div class="alert-danger"><h4>' . __('There has been an error processing your credentials', 'dd-cf7-plugin'). '</h4>';	
+			echo '<p>' . $options['error'] . '</p></div>';
 		}
-        if (isset($error)) {
-			echo '<h4>' . __('There has been an error connecting to the Constant Contact API.', 'dd-cf7-plugin'). '</h4>';	
-			echo '<div class="alert-danger"><p>' . $check['error'] . '</p></div>';
+        if ( null !== $error  ) {
+			echo '<div class="alert-danger"><h4>' . __('There has been an error connecting to the Constant Contact API.', 'dd-cf7-plugin'). '</h4>';	
+			echo '<p>' . $check['error'] . '</p></div>';
         }
 
         echo '<p>';
@@ -301,6 +309,8 @@ class dd_cf7_ctct_admin_settings {
 		curl_close($ch);
 		
 		$tokenData = json_decode($result);
+        
+        //if (!isset($tokenData->access_token))
 
 		$options['refresh_token'] = $tokenData->refresh_token;
 		$options['access_token'] = $tokenData->access_token;
