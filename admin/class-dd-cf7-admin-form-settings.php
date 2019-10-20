@@ -37,10 +37,10 @@ class dd_cf7_form_admin_settings {
 	}
 
 	public function panel_callback($form) {
-
-		$form_id = $_GET['post'];
+		$settings = array();
+		$form_id = (isset($_GET['post'])) ? $_GET['post'] : null;
 		$lists = get_option('dd_cf7_mailing_lists');
-        $settings = $this->dd_get_form_settings($form_id);
+        if (null !== $form_id) $settings = $this->dd_get_form_settings($form_id);
 
         // Define Initial Values
         $all_submissions = isset( $settings['all-submissions'] ) ? $settings['all-submissions'] : NULL;

@@ -323,7 +323,7 @@ class dd_ctct_api {
 		 * @param $ctct_data = response from CTCT with Contact info 
          * @since    1.0.0
          */
-	
+	    
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
 
@@ -333,7 +333,7 @@ class dd_ctct_api {
         foreach ($list_memberships as $key=>$value){
             $lists[] = $value;
         }
-        
+
         $deets = $this->build_ctct_array($ctct, $this->details, $submitted_values);
         $sa = $this->build_ctct_array($ctct_addr, $this->street_address, $submitted_values);
 

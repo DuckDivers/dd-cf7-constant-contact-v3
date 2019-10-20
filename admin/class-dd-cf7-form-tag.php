@@ -31,7 +31,8 @@ class dd_cf7_form_tag {
 
 		if ( empty( $tag->name ) )
 			return '';
-		
+		$hidden = $tag->get_option('hidden')[0];
+		$hide = (null !== $hidden && $hidden == 'true') ? true : false;
 		$atts = array();
 		$atts['class'] = $tag->get_option( 'class' )[0];
 		$atts['id'] = $tag->get_option( 'id' , 'id', true);
@@ -41,8 +42,11 @@ class dd_cf7_form_tag {
 		$inputid = (!empty($atts['id'])) ? 'id="'.$atts['id'].'" ' : 'ctct-form-'. $tag->name ;
     
         ob_start();
-        ?>
+        if ($hide) : ?>
         
+        <input type="hidden" name="ctct-list[<?php echo $tag->name;?>]" id="<?php echo $inputid;?>" value="<?php echo $listid;?>" /> 
+        
+        <?php else: ?>         
         <span class="wpcf7-form-control-wrap <?php echo $tag->name;?>">
             <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $inputid;?>">
                 <span class="wpcf7-list-item-label">
@@ -51,7 +55,9 @@ class dd_cf7_form_tag {
             </span>
         </span>
         
-        <?php return ob_get_clean();
+        <?php 
+        endif;
+        return ob_get_clean();
         // End of form tag output.
 	}
 
@@ -85,7 +91,7 @@ class dd_cf7_form_tag {
                                                 foreach ( $lists as $list => $name):?>
                                                 <option value="<?php echo $list;?>"><?php echo $name;?></option>
                                             <?php endforeach;?>
-                                        </select>
+                                        </select><br>
                                         <em>Choose a list. The List ID will appear in the tag.</em>
                                     <input type="text" id="<?php echo esc_attr( $args['content'] . '-list' ); ?>" class="listvalue oneline option" name="list" style="display:none;" value="">
                                         <script type="text/javascript">
@@ -123,10 +129,20 @@ class dd_cf7_form_tag {
                                     <label for="<?php echo esc_attr( $args['content'] . '-checked' ); ?>"><?php echo esc_html( __( 'Make Checkbox Pre-Checked', 'dd-cf7-plugin' ) ); ?></label>
                                 </th>
                                 <td>
-                                    <input type="checkbox" name="checked:true" id="<?php echo esc_attr( $args['content'] . '-checked' ); ?>" class="checkedvalue option" /><br />
+                                    <input type="checkbox" name="checked:true" id="<?php echo esc_attr( $args['content'] . '-checked' ); ?>" class="checkedvalue option" />
                                     <em><?php echo __('If checked, This will make the opt-in pre-checked','dd-cf7-plugin'); ?></em>
                                 </td>
                             </tr>
+							<tr>
+								<th scope="row">
+                                    <label for="<?php echo esc_attr( $args['content'] . '-hidden' ); ?>"><?php echo esc_html( __( 'Hidden checkbox', 'dd-cf7-plugin' ) ); ?></label>
+                                </th>
+                                <td>
+                                    <input type="checkbox" name="hidden:true" id="<?php echo esc_attr( $args['content'] . '-hidden' ); ?>" class="checkedvalue option" />
+                                    <em><?php echo __('This will make the checkbox hidden','dd-cf7-plugin'); ?></em>
+                                </td>
+
+							</tr>
                             <tr>
                                 <th scope="row">
                                     <label for="<?php echo esc_attr( $args['content'] . '-class' ); ?>"><?php echo esc_html( __( 'Class (optional)', 'dd-cf7-plugin' ) ); ?></label>
@@ -145,7 +161,7 @@ class dd_cf7_form_tag {
                             </tr>
                         </tbody></table>    
                 </fieldset>
-                <div class="insert-box" style="padding-left: 15px; padding-right: 15px;">
+                <div class="insert-box" style="padding-left: 15px; padding-right: 15px; bottom: 30px;">
                     <div class="tg-tag clear"><?php echo __( "This will insert a dropdown menu with the product for RMA or Registraiton.", 'dd-cf7-plugin' ); ?><br /><input type="text" name="ctct" class="tag code" readonly="readonly" onfocus="this.select();" onmouseup="return false;" /></div>
 
                     <div class="submitbox">
