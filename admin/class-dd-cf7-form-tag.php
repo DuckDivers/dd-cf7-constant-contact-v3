@@ -161,7 +161,7 @@ class dd_cf7_form_tag {
                             </tr>
                         </tbody></table>    
                 </fieldset>
-                <div class="insert-box" style="padding-left: 15px; padding-right: 15px; bottom: 30px;">
+                <div class="insert-box" style="padding-left: 15px; padding-right: 15px;">
                     <div class="tg-tag clear"><?php echo __( "This will insert a dropdown menu with the product for RMA or Registraiton.", 'dd-cf7-plugin' ); ?><br /><input type="text" name="ctct" class="tag code" readonly="readonly" onfocus="this.select();" onmouseup="return false;" /></div>
 
                     <div class="submitbox">
