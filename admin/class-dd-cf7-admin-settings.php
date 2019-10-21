@@ -14,8 +14,9 @@ class dd_cf7_ctct_admin_settings {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'init_settings'  ) );
         add_action( 'admin_footer', array( $this, 'add_enabled_icon' ) );
-		add_filter( 'plugin_row_meta', array($this, 'add_links_to_plugin_listing') , 10, 2 );
-		add_filter( 'plugin_action_links_dd-cf7-constant-contact-v3/dd-cf7-constant-contact-v3.php' , array($this, 'filter_action_links'), 10, 1);
+		add_filter( 'plugin_row_meta', array( $this, 'add_links_to_plugin_listing') , 10, 2 );
+		add_filter( 'plugin_action_links_dd-cf7-constant-contact-v3/dd-cf7-constant-contact-v3.php' , array( $this, 'filter_action_links'), 10, 1);
+		//add_action( 'admin_notices', array( $this, 'upsell_notice' ) );
 	}
 
 	public function add_admin_menu() {
@@ -77,7 +78,7 @@ class dd_cf7_ctct_admin_settings {
 	}
 
 	public function page_layout() {
-		
+
 		if (isset($_GET['action']) && $_GET['action'] == 'disconnect'){
                 delete_option( 'cf7_ctct_settings' );
                 echo '<script>window.location="admin.php?page=dd_ctct"</script>';
@@ -95,7 +96,7 @@ class dd_cf7_ctct_admin_settings {
         // Set up variables for function
         $check = array();
         $error = false;
-
+        
         if (false !== $options){
 	       if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
                 if (!isset($options['access_token'])) $this->performAuthorization();
@@ -141,8 +142,13 @@ class dd_cf7_ctct_admin_settings {
             $check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
             $error = true;
         }
+		/* $active = 'nav-tab-active';
+		?>
+		<h2 class="nav-tab-wrapper">
+			<a href="#" class="nav-tab <?php echo $active;?>">API Settings</a>
+			<a href="#" class="nav-tab">Custom Fields</a>
+		</h2> <?php */
 
-            
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
         echo '  <img src="'.plugin_dir_url(__FILE__) .'/img/CTCT_horizontal_logo.png">';
@@ -268,71 +274,50 @@ class dd_cf7_ctct_admin_settings {
 		$options['error'] = '';
 		update_option('cf7_ctct_settings', $options);
 
-		// Use cURL to get access token and refresh token
-		$ch = curl_init();
-
-		// Define base URL
 		$base = 'https://idfed.constantcontact.com/as/token.oauth2';
-
-		// Create full request URL
 		$url = $base . '?code=' . $code . '&redirect_uri=' . $redirectURI . '&grant_type=authorization_code&scope=contact_data';
-		curl_setopt($ch, CURLOPT_URL, $url);
-
 		// Set authorization header
 		// Make string of "API_KEY:SECRET"
 		$auth = $clientId . ':' . $clientSecret;
 		// Base64 encode it
 		$credentials = base64_encode($auth);
 		// Create and set the Authorization header to use the encoded credentials
-		$authorization = 'Authorization: Basic ' . $credentials;
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array($authorization));
-
-		// Set method and to expect response
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-		// Make the call
-			$result = curl_exec($ch);
-			curl_close($ch);
-			return json_decode($result);
-	}
+		$authorization = 'Basic ' . $credentials;
+        $args = array(
+            "headers" => array(
+                "Authorization" => $authorization,
+            )
+        );
+        $response = wp_remote_post($url, $args);
+		$result = wp_remote_retrieve_body($response);
+        return json_decode($result);
+    }
 	
 	public function refreshToken() {
 		$options = get_option( 'cf7_ctct_settings' );
 		$refreshToken = $options['refresh_token'];
 		$clientId = $options['api_key'];
 		$clientSecret = $options['api_secret'];
-
-		// Use cURL to get a new access token and refresh token
-		$ch = curl_init();
-
-		// Define base URL
+        // Define base URL
 		$base = 'https://idfed.constantcontact.com/as/token.oauth2';
-
-		// Create full request URL
+        // Create full request URL
 		$url = $base . '?refresh_token=' . $refreshToken . '&grant_type=refresh_token';
-		curl_setopt($ch, CURLOPT_URL, $url);
-
 		// Set authorization header
 		// Make string of "API_KEY:SECRET"
 		$auth = $clientId . ':' . $clientSecret;
 		// Base64 encode it
 		$credentials = base64_encode($auth);
 		// Create and set the Authorization header to use the encoded credentials
-		$authorization = 'Authorization: Basic ' . $credentials;
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array($authorization));
-
-		// Set method and to expect response
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-		// Make the call
-		$result = curl_exec($ch);
-		curl_close($ch);
-		
-		$tokenData = json_decode($result);
-        
-        //if (!isset($tokenData->access_token))
+		$authorization = 'Basic ' . $credentials;
+        // Set Headers for wp_remote_post
+        $args = array(
+            "headers" => array(
+                "Authorization" => $authorization,
+            )
+        );
+        // Get Response
+        $response = wp_remote_post($url, $args);
+		$tokenData = json_decode(wp_remote_retrieve_body($response));
 
 		$options['refresh_token'] = $tokenData->refresh_token;
 		$options['access_token'] = $tokenData->access_token;
@@ -427,11 +412,11 @@ class dd_cf7_ctct_admin_settings {
                 $logged_in = true;
                 break;
             case 401: 
-                $error = "The Access Token used is invalid.";
+                $error = esc_html("The Access Token used is invalid.");
                 $logged_in = false;
                 break;
             case 501:
-                $error = "Our internal service is temporarily unavailable.";
+                $error = esc_html("Our internal service is temporarily unavailable.");
                 $logged_in = false;
                 break;    
             case 500:
@@ -480,4 +465,17 @@ class dd_cf7_ctct_admin_settings {
 		 $links['settings'] = sprintf( '<a href="'.admin_url("/admin.php?page=dd_ctct").'">%s</a>', __('Settings') );
 		 return $links;
 		}
+	
+	public function upsell_notice(){ 
+		$screen = get_current_screen();
+	    $user_id = get_current_user_id();
+		$count = get_user_meta($user_id, 'dd-ctct-cf7-notice-counter', true);
+		if ($screen->id == 'toplevel_page_wpcf7' && ($count % 5 == 0)) :
+		?>
+
+				<div id="dd-ctct-notices" class="notice notice-info notice-large"><p>Want more Constant Contact fields?  Get fields like, Phone, Birthday, Anniversary, custom fields, and any available field from Constant Contact with the Premium Plugin</p></div>
+		<?php endif;
+		$count = (empty(intval($count))) ? 1 : (intval($count)) + 1;
+		update_user_meta($user_id, 'dd-ctct-cf7-notice-counter', $count);
+	}
 }

@@ -18,7 +18,7 @@ class dd_cf7_form_admin_settings {
 			'email_address' => 'E-Mail Address',
 			'first_name' => 'First Name',
 			'last_name' => 'Last Name',
-            'phone_number' => 'Phone Number',
+//          'phone_number' => 'Phone Number',
 			'street' => 'Street',
 			'city' => 'City',
 			'state' => 'State',
@@ -37,6 +37,8 @@ class dd_cf7_form_admin_settings {
 	}
 
 	public function panel_callback($form) {
+        wp_enqueue_script('dd-cf7-constant-contact-v3');
+        
 		$settings = array();
 		$form_id = (isset($_GET['post'])) ? $_GET['post'] : null;
 		$lists = get_option('dd_cf7_mailing_lists');
@@ -61,10 +63,10 @@ class dd_cf7_form_admin_settings {
 						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
 					<?php endforeach;?>
 				</select>
-				<p class="info">You may choose multiple lists, or use the ctct form tag on the form.</p>
+				<p class="info"><?php echo esc_html__('You may choose multiple lists, or use the ctct form tag on the form.', 'dd-cf7-plugin');?></p>
 			</div>
             <?php else :?>
-            <h3>You must enter your constant contact settings before completing these fields</h3>
+            <h3><?php echo esc_html__('You must enter your constant contact settings before completing these fields', 'dd-cf7-plugin');?></h3>
             <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
             <?php endif;?>
 		</div>
@@ -163,9 +165,9 @@ class dd_cf7_form_admin_settings {
         if ( ! $post_id ) {
             return;
         }
-
+        $data = sanitize_post($_POST['cf7-ctct']);
         if ( $_POST['cf7-ctct'] ) {
-            update_post_meta( $post_id, '_ctct_cf7', $_POST['cf7-ctct'] );
+            update_post_meta( $post_id, '_ctct_cf7', $data );
         }
     }
 
@@ -200,6 +202,4 @@ class dd_cf7_form_admin_settings {
 
         return $settings;
     }
-
-
 }

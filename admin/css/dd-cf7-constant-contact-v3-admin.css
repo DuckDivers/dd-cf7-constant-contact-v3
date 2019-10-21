@@ -9,7 +9,9 @@
 	padding: 0.7em 2em 1em;
 	position: relative;
 }
-
+form.tag-generator-panel[data-id="ctct"] {
+    height: 550px;
+}
 .contact_page_dd_ctct .card.active {
 	border-color: #00a0d2;
 }

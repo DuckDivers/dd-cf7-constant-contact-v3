@@ -137,79 +137,54 @@ class dd_ctct_api {
 	// Retrieve Lists
 	public function get_lists(){
 		
-		$curl = curl_init();
-
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => "https://api.cc.email/v3/contact_lists",
-		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_ENCODING => "",
-		  CURLOPT_MAXREDIRS => 10,
-		  CURLOPT_TIMEOUT => 30,
-		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => "GET",
-		  CURLOPT_HTTPHEADER => array(
-			"Accept: */*",
-			"Accept-Encoding: gzip, deflate",
-			"Authorization: Bearer {$this->get_api_key()}",
-			"Cache-Control: no-cache",
-			"Connection: keep-alive",
-			"Content-Type: application/json",
-			"cache-control: no-cache"
-		  ),
-		));
-
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-
-		curl_close($curl);
+		$url = "https://api.cc.email/v3/contact_lists";
 		
-		$body = 'While attempting to retrieve the constant contact lists. \r\n';
-		$body .= "cURL Error #:" . $err;
-		if ($err) {
+		$args = array(
+            "headers" => array(
+                "Accept" => "*/*",
+                "Accept-Encoding" => "gzip, deflate",
+                "Authorization" => "Bearer {$this->get_api_key()}",
+                "Content-Type" => "application/json",
+            )
+        );
+		$url = 'https://api.cc.email/v3/contact_lists';
+
+		$response = wp_remote_get( $url, $args);
+		$ctct = json_decode(wp_remote_retrieve_body($response) , true);
+		$code = wp_remote_retrieve_response_code($response);
+		
+		if ( $code !== 200) {
+			$body = "While attempting to retrieve the constant contact lists. \r\n";
+			$body .= "Error #:" . $code . "\r\n";
+			$body .= $ctct['error_message'];
 			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 			return false;
-	    } else {
-			$lists = json_decode($response, true);
+		} else {
 			$lists_array = array();
-			
 			foreach ($lists['lists'] as $list){
 				$lists_array[$list['list_id']] = $list['name'];
 			}
 			update_option( 'dd_cf7_mailing_lists', $lists_array);
-
             return true;
 		}		
 	}
 	
 	public function check_email_exists($email){
-		$curl = curl_init();
+		
+		$url = $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships&include_count=false";
+		
+		$args = array(
+            "headers" => array(
+                "Accept" => "*/*",
+                "Accept-Encoding" => "gzip, deflate",
+                "Authorization" => "Bearer {$this->get_api_key()}",
+                "Content-Type" => "application/json",
+            )
+        );
 
-		curl_setopt_array($curl, array(
-		  CURLOPT_URL => $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships&include_count=false",
-		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_ENCODING => "",
-		  CURLOPT_MAXREDIRS => 10,
-		  CURLOPT_TIMEOUT => 30,
-		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => "GET",
-		  CURLOPT_HTTPHEADER => array(
-			"Authorization: Bearer " . $this->get_api_key(),
-			"Content-Type: application/json",
-			"cache-control: no-cache"
-		  ),
-		));
-
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-
-		curl_close($curl);
-		$body = 'While performing the check if email exists function, there was an error \r\n';
-		$body .= "cURL Error #:" . $err;
-		if ($err) {
-			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
-	    }
-        $ctct = json_decode($response);
-        
+		$response = wp_remote_get( $url, $args);
+		$ctct = json_decode(wp_remote_retrieve_body($response));
+      
         if (empty($ctct->contacts) || !isset($ctct->contacts) ){
             if ( isset ($ctct->error_key) ){
 				return 'unauthorized';
@@ -244,54 +219,38 @@ class dd_ctct_api {
          *
          * @since    1.0.0
          */
-        $curl = curl_init();
+        $url = "{$this->api_url}contacts";
         
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => "{$this->api_url}contacts",
-			CURLOPT_RETURNTRANSFER => true,
-			  CURLOPT_ENCODING => "",
-			  CURLOPT_MAXREDIRS => 10,
-			  CURLOPT_TIMEOUT => 30,
-			  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			  CURLOPT_CUSTOMREQUEST => "POST",
-			  CURLOPT_POSTFIELDS => json_encode($json_data),
-			  CURLOPT_HTTPHEADER => array(
-				"Accept: */*",
-				"Accept-Encoding: gzip, deflate",
-				"Authorization: Bearer {$this->get_api_key()}",
-				"Cache-Control: no-cache",
-				"Connection: keep-alive",
-				"Content-Length: ". $content_length,
-				"Content-Type: application/json",
-				"Host: api.cc.email",
-				"cache-control: no-cache"
-			  ),
-			));    
+        $args = array(
+            "headers" => array(
+                        "Accept" => "*/*",
+                        "Accept-Encoding" => "gzip, deflate",
+                        "Authorization" => "Bearer {$this->get_api_key()}",
+                        "Content-Type" => "application/json",
+                        "Content-Length" => $content_length,
+            ),
+            "body" => json_encode($json_data),
+        );
         
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
+        $response = wp_remote_post($url, $args);
+        $code = wp_remote_retrieve_response_code($response);
 		
-		curl_close($curl);
-        
-        $ck = json_decode($response);
-
-		
-        if (is_array($ck) ){
-			if ($ck[0]->error_key == 'contacts.api.conflict') {
+        if ($code !== 201){
+            if ($code == 409){
 				$body = 'The following contact had previously un-subscribed from one of your lists, and can not be added via this application.' . PHP_EOL;
 				$body .= '' . PHP_EOL;
 				$body .= print_r($json_data, true);
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 				return 'unsubscribed';
-			}
-        }
-        
-		$body = 'While trying to add a new email address, there was an error \r\n';
-		$body .= "cURL Error #:" . $err;
-		if ($err) {
-			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
-			return false;
-	    } else {
+            } else {
+        		$body = "While trying to add a new email address, there was an error \r\n\r\n";
+                $message = $this->get_error_code_response($code);
+                $body .= "The error code was {$code} \r\n\r\n";
+                $body .= $message['message'];
+                wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+                return false;
+            }
+        } else {
           return true;
         }
 	}
@@ -352,43 +311,33 @@ class dd_ctct_api {
 
         $content_length = strlen( json_encode( $json_data ) );
 
-        $curl = curl_init();
-
-        curl_setopt_array( $curl, array(
-            CURLOPT_URL => "{$this->api_url}contacts/{$contact_id}",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "PUT",
-            CURLOPT_POSTFIELDS => json_encode( $json_data ),
-            CURLOPT_HTTPHEADER => array(
-                "Accept: */*",
-                "Accept-Encoding: gzip, deflate",
-                "Authorization: Bearer {$this->get_api_key()}",
-                "Cache-Control: no-cache",
-                "Connection: keep-alive",
-                "Content-Length: " . $content_length,
-                "Content-Type: application/json",
-                "Host: api.cc.email",
-                "cache-control: no-cache"
+        $url = "{$this->api_url}contacts/{$contact_id}";
+        
+        $args = array(
+            "headers" => array(
+                        "Accept" => "*/*",
+                        "Accept-Encoding" => "gzip, deflate",
+                        "Authorization" => "Bearer {$this->get_api_key()}",
+                        "Content-Type" => "application/json",
+                        "Content-Length" => $content_length,
             ),
-        ) );
-
-        $response = curl_exec($curl);
-		// For Debug
-		//error_log($response);
-        $err = curl_error($curl);
-		$body = 'While trying to update an existing contact, there was an error \r\n';
-		$body .= "cURL Error #:" . $err;
-		if ($err) {
+            "body" => json_encode($json_data),
+            "method" => "PUT",
+        );
+        
+        $response = wp_remote_request($url, $args);
+        $code = wp_remote_retrieve_response_code($response);
+        
+		if ($code !== 200) {
+    		$body = "While trying to update an existing contact, there was an error \r\n";
+            $body .= "Error #:" . $code . "\r\n";
+            $message = $this->get_error_code_response($code);
+            $body .= $message['message'];
 			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 			return false;
 	    } else {
           return true;
-        }
-        
+        }   
     }
     
     public function build_ctct_array($ctct, $item, $submitted_values){
@@ -416,5 +365,46 @@ class dd_ctct_api {
             }
         }
         return $item;
+    }
+    
+    public function get_error_code_response($code){
+        $status = array();        
+        switch ($code){
+            case 200:
+                $status['error'] = false;
+                break;
+            case 201:
+                $status['error'] = false;
+                break;
+            case 400: 
+                $status['error'] = true;
+                $status['message'] = esc_html__('Bad request. Either the JSON was malformed or there was a data validation error.', 'dd-cf7-plugin');
+                break;
+            case 401: 
+                $status['message'] = esc_html__("The Access Token used is invalid.", 'dd-cf7-plugin');
+                $status['error'] = true;
+                break;
+            case 403: 
+                $status['message'] = esc_html__("Forbidden request. You lack the necessary scopes, you lack the necessary user privileges, or the application i, 'dd-cf7-plugin's deactivated.");
+                $status['error'] = true;
+                break;
+            case 409: 
+                $status['message'] = esc_html__("Conflict. The resource you are creating or updating conflicts with an existing resource. This contact has mostl, 'dd-cf7-plugin'y likely previously unsubscribed. You may have to contact them directly.");
+                $status['error'] = true;
+                break;
+            case 501:
+                $status['message'] = esc_html__("Our internal service is temporarily unavailable.", 'dd-cf7-plugin');
+                $status['error'] = true;
+                break;    
+            case 500:
+                $status['message'] = esc_html__("There was a problem with our internal service.", 'dd-cf7-plugun');
+                $status['error'] = true;
+                break;
+            default: 
+                $status['error'] = true;
+                $status['message'] = esc_html__("Undefined Error Occurred. Please check your settings, API Key, and API Secret.", 'dd-cf7-plugin');
+                break;
+        }
+        return $status;
     }
 }
