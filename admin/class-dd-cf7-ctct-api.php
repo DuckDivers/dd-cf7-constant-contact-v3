@@ -161,7 +161,7 @@ class dd_ctct_api {
 			return false;
 		} else {
 			$lists_array = array();
-			foreach ($lists['lists'] as $list){
+			foreach ($ctct['lists'] as $list){
 				$lists_array[$list['list_id']] = $list['name'];
 			}
 			update_option( 'dd_cf7_mailing_lists', $lists_array);
