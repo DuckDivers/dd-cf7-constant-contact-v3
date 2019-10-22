@@ -130,9 +130,7 @@ class dd_cf7_ctct_admin_settings {
                     $this->refreshToken();								
                 } 
             }
-        } else {
-            
-        }
+        } 
         
         if (!empty($options['access_token'])) {        
             $check = $this->check_logged_in($options['access_token']);
