@@ -64,7 +64,23 @@ class dd_ctct_api {
         $reauth = new dd_cf7_ctct_admin_settings;
         
         $submitted_values = maybe_unserialize(get_transient('ctct_to_process'));
-                
+        
+        // Check if E-Mail Address is valid
+        
+        $email = sanitize_email($submitted_values['email_address']);
+        
+        $valid_email = $this->validate_email($email);
+        
+        if (false == $valid_email) {
+            $body = "<p>The following is from a user who attempted to enter in an invalid domain name on Contact Form ID {$submitted_values['formid']}.</p>";
+			ob_start();
+			echo '<pre>'; print_r($submitted_values); echo '</pre>';
+			$body .= ob_get_clean();
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
+            return false;
+        }
+            
         $exists = $this->check_email_exists($submitted_values['email_address']);
         
 		if ($exists == 'unauthorized'){
@@ -81,9 +97,10 @@ class dd_ctct_api {
         
         if (isset($ctct)){        
 		  if (false == $ctct){
-			$body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually.</p>';
 			ob_start();
-			echo '<pre>'; print_r($submitted_values); echo '</pre>';
+            $body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually.</p>';
+            $body .= "This was submitted from Form ID: {$submitted_values['formid']}";
+            echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
@@ -132,6 +149,7 @@ class dd_ctct_api {
                 $submitted_values[$value[0]] = $posted_data[$field];
             }
 		}
+        $submitted_values['formid'] = $posted_data['_wpcf7'];
 		return $submitted_values;
 	}
 	// Retrieve Lists
@@ -239,6 +257,7 @@ class dd_ctct_api {
             if ($code == 409){
 				$body = 'The following contact had previously un-subscribed from one of your lists, and can not be added via this application.' . PHP_EOL;
 				$body .= '' . PHP_EOL;
+                $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
 				$body .= print_r($json_data, true);
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 				return 'unsubscribed';
@@ -246,6 +265,7 @@ class dd_ctct_api {
         		$body = "While trying to add a new email address, there was an error \r\n\r\n";
                 $message = $this->get_error_code_response($code);
                 $body .= "The error code was {$code} \r\n\r\n";
+                $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
                 $body .= $message['message'];
                 wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
                 return false;
@@ -264,7 +284,7 @@ class dd_ctct_api {
 		 */
 		foreach ( $item as $key => $val ) {
 			if (isset($submitted_values[$key])){
-            	$item[$key] = $submitted_values[ $key ];
+            	$item[$key] = sanitize_text_field($submitted_values[ $key ]);
 			} elseif ($key == 'kind'){
 				$item[$key] = "home";
 			} else {
@@ -331,6 +351,7 @@ class dd_ctct_api {
 		if ($code !== 200) {
     		$body = "While trying to update an existing contact, there was an error \r\n";
             $body .= "Error #:" . $code . "\r\n";
+            $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
             $message = $this->get_error_code_response($code);
             $body .= $message['message'];
 			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
@@ -346,24 +367,26 @@ class dd_ctct_api {
      * @param $item = array of fields being submitted to ctct - details or addresses
      * @param $submitted_values = cf7 form field submissions from transient
      * @since    1.0.0
-     */         
+     */
+        
         foreach ( $item as $key => $val ) {
             if ( isset( $ctct->$key ) ) {
                 if ( ( isset( $submitted_values[ $key ] ) && $submitted_values[ $key ] == $ctct->$key ) || !isset($submitted_values[$key])) {
                     $item[$key] = $ctct->$key;
                 } 
                 else {
-                    $item[$key] = $submitted_values[ $key ];
+                    $item[$key] = sanitize_text_field($submitted_values[ $key ]);
                 }
             } else {
                 if ( isset( $submitted_values[ $key ] ) ) {
-                    $item[$key] = $submitted_values[$key];
+                    $item[$key] = sanitize_text_field($submitted_values[ $key ]);
                 }
                 else {
                     unset($item[$key]);
                 }
             }
-        }
+        } 
+        
         return $item;
     }
     
@@ -406,5 +429,13 @@ class dd_ctct_api {
                 break;
         }
         return $status;
+    }
+    private function validate_email($email){
+        $domain = substr( $email, strpos( $email, '@' ) + 1 );
+        if ( checkdnsrr( $domain, "MX" ) ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
