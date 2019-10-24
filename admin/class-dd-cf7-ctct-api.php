@@ -35,12 +35,6 @@ class dd_ctct_api {
             $options = get_option('cf7_ctct_settings');
             if (false !== $options && isset($options['access_token'])) $this->get_lists();
 		}
-		/**
-		 * TODO
-		 * Check Authorization is Valid on CF7 Init
-		 *
-		 * @since    1.0.0
-		 */
 	}
 
     private function get_admin_email(){
@@ -54,7 +48,6 @@ class dd_ctct_api {
 			set_transient('ctct_to_process', $submitted_values, 3 * MINUTE_IN_SECONDS );
 		}
 	}
-    
     public function push_to_constant_contact(){
 		        
         if ( false === ($submitted_values = get_transient('ctct_to_process') ) ) {
@@ -99,7 +92,7 @@ class dd_ctct_api {
 		  if (false == $ctct){
 			ob_start();
             $body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually.</p>';
-            $body .= "This was submitted from Form ID: {$submitted_values['formid']}";
+            $body .= "This was submitted from Form ID: {$submitted_values['formid']} \r\n";
             echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
@@ -146,10 +139,18 @@ class dd_ctct_api {
 		}				
 		foreach ($settings['fields'] as $field=>$value){
             if (array_key_exists($field, $posted_data)) {
-                $submitted_values[$value[0]] = $posted_data[$field];
+				// Remove Empty Fields
+				// Sanitize and remove accents
+				if (!empty($posted_data[$field])) {
+                	$data = sanitize_text_field($posted_data[$field]);
+					$data = remove_accents($data);
+					$submitted_values[$value[0]] = $data;
+				}
             }
 		}
+		// ADD Form ID for Error Reporting
         $submitted_values['formid'] = $posted_data['_wpcf7'];
+		
 		return $submitted_values;
 	}
 	// Retrieve Lists
@@ -284,7 +285,7 @@ class dd_ctct_api {
 		 */
 		foreach ( $item as $key => $val ) {
 			if (isset($submitted_values[$key])){
-            	$item[$key] = sanitize_text_field($submitted_values[ $key ]);
+            	$item[$key] = $submitted_values[ $key ];
 			} elseif ($key == 'kind'){
 				$item[$key] = "home";
 			} else {
@@ -375,11 +376,11 @@ class dd_ctct_api {
                     $item[$key] = $ctct->$key;
                 } 
                 else {
-                    $item[$key] = sanitize_text_field($submitted_values[ $key ]);
+                    $item[$key] = ($submitted_values[ $key ]);
                 }
             } else {
                 if ( isset( $submitted_values[ $key ] ) ) {
-                    $item[$key] = sanitize_text_field($submitted_values[ $key ]);
+                    $item[$key] = ($submitted_values[ $key ]);
                 }
                 else {
                     unset($item[$key]);
