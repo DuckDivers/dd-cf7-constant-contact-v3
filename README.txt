@@ -20,7 +20,7 @@ This is an advanced Constant Contact to Contact Form 7 Connector. This plug-in w
 *   Last Name
 *   Birthday
 *   Company Name
-
+*   Address Information including Country
 
 There will be a pro version available that can connect with any available Constant Contact field, including custom fields that you've defined in your Constant Contact account.
 
@@ -35,6 +35,10 @@ There will be a pro version available that can connect with any available Consta
 = How do I get a Constant Contact API Access Key and Secret? =
 
 To get started, go to [Constant Contact Developer](https://app.constantcontact.com/pages/dma/portal/)
+
+= Do you have detailed instructions on setting up the plugin? =
+
+Yes.  There is a complete walkthrough here [How to create an API Key and Token](https://www.duckdiverllc.com/how-to-create-a-constant-contact-api-key/) and here [How to set up this plugin](https://www.duckdiverllc.com/connecting-constant-contact-and-contact-form-7/).
 
 = The form isn't sending the data to Constant Contact =
 
