@@ -239,7 +239,7 @@ class dd_ctct_api {
 		
         $content_length = strlen(json_encode($json_data));
 		
-        error_log(json_encode($json_data));
+        //error_log(json_encode($json_data));
         
         /**
          * Prepare the API Call Initiate CURL
@@ -351,7 +351,7 @@ class dd_ctct_api {
 
         $url = "{$this->api_url}contacts/{$contact_id}";
         
-        error_log(json_encode($json_data));
+        //error_log(json_encode($json_data));
         
         $args = array(
             "headers" => array(
