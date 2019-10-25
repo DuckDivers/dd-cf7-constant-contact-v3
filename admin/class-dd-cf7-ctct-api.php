@@ -79,8 +79,15 @@ class dd_ctct_api {
 		if ($exists == 'unauthorized'){
 			if ($this->c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
-			$reauth->refreshToken();	
-	        $this->push_to_constant_contact();
+            if (isset($options['refresh_token'])) {
+                $reauth->refreshToken();	
+                $this->push_to_constant_contact();
+            } else {
+                $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
+                $headers = array('Content-Type: text/html; charset=UTF-8');
+                    wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
+                return false;
+            }
 		} elseif (false == $exists){
 			$ctct = $this->create_new_subscription($submitted_values);
 		} else {
@@ -89,12 +96,11 @@ class dd_ctct_api {
 		// If API Call Failed
         
         if (isset($ctct)){        
-		  if (false == $ctct){
+		  if (true !== $ctct['success']){
 			ob_start();
-            $body = '<p>While connecting to Constant Contact, there was an error with the submision.  The submitted data will follow.  This subscriber was not synced, and will have to be done manually.</p>';
-            $body .= "This was submitted from Form ID: {$submitted_values['formid']} \r\n";
-            echo '<pre>'; print_r($submitted_values); echo '</pre>';
-			$body .= ob_get_clean();
+                echo "{$ctct['message']}\r\n\r\n";  
+                echo '<pre>'; print_r($submitted_values); echo '</pre>';
+			$body = ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
             } 
@@ -216,7 +222,7 @@ class dd_ctct_api {
 	}
 	
 	public function create_new_subscription($submitted_values){
-		
+		$return = array();
 		$names = $this->create_new_contact_array($this->details, $submitted_values);
 		$address = $this->create_new_contact_array($this->street_address, $submitted_values);
 	       
@@ -233,6 +239,8 @@ class dd_ctct_api {
 		
         $content_length = strlen(json_encode($json_data));
 		
+        error_log(json_encode($json_data));
+        
         /**
          * Prepare the API Call Initiate CURL
          *
@@ -253,26 +261,35 @@ class dd_ctct_api {
         
         $response = wp_remote_post($url, $args);
         $code = wp_remote_retrieve_response_code($response);
-		
+		$message = json_decode(wp_remote_retrieve_body($response));
+        
         if ($code !== 201){
             if ($code == 409){
-				$body = 'The following contact had previously un-subscribed from one of your lists, and can not be added via this application.' . PHP_EOL;
-				$body .= '' . PHP_EOL;
-                $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
-				$body .= print_r($json_data, true);
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
-				return 'unsubscribed';
+                ob_start();
+				echo '<p>The following contact had previously un-subscribed from one of your lists, and can not be added via this application.</p>';
+				echo '<p>&nbsp;</p>';
+                echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
+				print_r($json_data);
+                $body = ob_get_clean();
+				//wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+                $return['success'] = false;
+                $return['message'] = $body;
+				return $return;
             } else {
-        		$body = "While trying to add a new email address, there was an error \r\n\r\n";
-                $message = $this->get_error_code_response($code);
-                $body .= "The error code was {$code} \r\n\r\n";
-                $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
-                $body .= $message['message'];
-                wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
-                return false;
+                ob_start();
+        		echo "<p>While trying to add a new email address, there was an error</p>";
+                echo "<p>The error code was {$code}</p>";
+                echo "<p>Message from Constant Contact: {$message[0]->error_message}</p>";
+                echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
+                $body = ob_get_clean();
+                //wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+                $return['success'] = false;
+                $return['message'] = $body;
+                return $return;
             }
         } else {
-          return true;
+            $return['success'] = true;
+            return $return;
         }
 	}
 	
@@ -303,7 +320,7 @@ class dd_ctct_api {
 		 * @param $ctct_data = response from CTCT with Contact info 
          * @since    1.0.0
          */
-	    
+	    $return = array();
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
 
@@ -334,6 +351,8 @@ class dd_ctct_api {
 
         $url = "{$this->api_url}contacts/{$contact_id}";
         
+        error_log(json_encode($json_data));
+        
         $args = array(
             "headers" => array(
                         "Accept" => "*/*",
@@ -348,17 +367,20 @@ class dd_ctct_api {
         
         $response = wp_remote_request($url, $args);
         $code = wp_remote_retrieve_response_code($response);
+        $message = json_decode(wp_remote_retrieve_body($response));
         
 		if ($code !== 200) {
     		$body = "While trying to update an existing contact, there was an error \r\n";
             $body .= "Error #:" . $code . "\r\n";
+            $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
             $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
-            $message = $this->get_error_code_response($code);
-            $body .= $message['message'];
-			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
-			return false;
+			//wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+            $return['success'] = false;
+            $return['message'] = $body;
+			return $return;
 	    } else {
-          return true;
+            $return['success'] = false;
+            return $return;
         }   
     }
     
@@ -390,47 +412,11 @@ class dd_ctct_api {
         
         return $item;
     }
-    
-    public function get_error_code_response($code){
-        $status = array();        
-        switch ($code){
-            case 200:
-                $status['error'] = false;
-                break;
-            case 201:
-                $status['error'] = false;
-                break;
-            case 400: 
-                $status['error'] = true;
-                $status['message'] = esc_html__('Bad request. Either the JSON was malformed or there was a data validation error.', 'dd-cf7-plugin');
-                break;
-            case 401: 
-                $status['message'] = esc_html__("The Access Token used is invalid.", 'dd-cf7-plugin');
-                $status['error'] = true;
-                break;
-            case 403: 
-                $status['message'] = esc_html__("Forbidden request. You lack the necessary scopes, you lack the necessary user privileges, or the application i, 'dd-cf7-plugin's deactivated.");
-                $status['error'] = true;
-                break;
-            case 409: 
-                $status['message'] = esc_html__("Conflict. The resource you are creating or updating conflicts with an existing resource. This contact has mostl, 'dd-cf7-plugin'y likely previously unsubscribed. You may have to contact them directly.");
-                $status['error'] = true;
-                break;
-            case 501:
-                $status['message'] = esc_html__("Our internal service is temporarily unavailable.", 'dd-cf7-plugin');
-                $status['error'] = true;
-                break;    
-            case 500:
-                $status['message'] = esc_html__("There was a problem with our internal service.", 'dd-cf7-plugun');
-                $status['error'] = true;
-                break;
-            default: 
-                $status['error'] = true;
-                $status['message'] = esc_html__("Undefined Error Occurred. Please check your settings, API Key, and API Secret.", 'dd-cf7-plugin');
-                break;
-        }
-        return $status;
-    }
+    /**
+     * Validate the MX Record Exists
+     *
+     * @since    1.0.0
+     */
     private function validate_email($email){
         $domain = substr( $email, strpos( $email, '@' ) + 1 );
         if ( checkdnsrr( $domain, "MX" ) ) {
