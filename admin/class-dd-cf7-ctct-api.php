@@ -11,7 +11,7 @@ class dd_ctct_api {
 	private $api_url = 'https://api.cc.email/v3/';
 	private $c = 0;
 	private $details = array('first_name'=>'', 'last_name'=>'', 'job_title'=>'', 'comapny_name'=>'', 'create_source'=>'', 'birthday_month'=>'', 'birthday_day'=>'', 'anniversary'=>'');
-    private $street_address = array( 'kind'=>'', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
+    private $street_address = array( 'kind'=>'home', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
 	
     public function __construct(){
 		add_action( 'wpcf7_before_send_mail', array($this, 'cf7_process_form'));
@@ -70,7 +70,7 @@ class dd_ctct_api {
 			echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 73)', $body, $headers);
             return false;
         }
             
@@ -85,7 +85,7 @@ class dd_ctct_api {
             } else {
                 $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
                 $headers = array('Content-Type: text/html; charset=UTF-8');
-                    wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
+                    wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 88)', $body, $headers);
                 return false;
             }
 		} elseif (false == $exists){
@@ -102,7 +102,7 @@ class dd_ctct_api {
                 echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body = ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
+				wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 105)', $body, $headers);
             } 
         }    
     }
@@ -182,7 +182,7 @@ class dd_ctct_api {
 			$body = "While attempting to retrieve the constant contact lists. \r\n";
 			$body .= "Error #:" . $code . "\r\n";
 			$body .= $ctct['error_message'];
-			wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
+			wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 185)', $body);
 			return false;
 		} else {
 			$lists_array = array();
@@ -374,6 +374,7 @@ class dd_ctct_api {
             $body .= "Error #:" . $code . "\r\n";
             $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
             $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
+            $body .= json_encode($json_data);			
 			//wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
             $return['success'] = false;
             $return['message'] = $body;
