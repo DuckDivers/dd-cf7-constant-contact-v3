@@ -74,9 +74,15 @@ class dd_cf7_ctct_admin_settings {
 			'cf7_ctct_settings',
 			'cf7_ctct_settings_section'
 		);
+        add_settings_field(
+			'send_email',
+			__( 'E-Mail Errors', 'dd-cf7-plugin' ),
+			array( $this, 'render_send_email_field' ),
+			'cf7_ctct_settings',
+			'cf7_ctct_settings_section'
+		);
 
 	}
-
 	public function page_layout() {
 
 		if (isset($_GET['action']) && $_GET['action'] == 'disconnect'){
@@ -91,12 +97,12 @@ class dd_cf7_ctct_admin_settings {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'dd-cf7-plugin' ) );
 		}
 		
-		$options = get_option( 'cf7_ctct_settings' );
+		$options = get_option( 'cf7_ctct_settings' ); //echo '<pre>'; print_r($options); echo '</pre>';
 		$lists = get_option('dd_cf7_mailing_lists');
         // Set up variables for function
         $check = array();
         $error = false;
-        
+
         if (false !== $options){
 	       if(isset($_GET["perform"]) || (!isset($options['oauth_performed']) && !isset($_GET["code"]))){
                 if (!isset($options['access_token'])) $this->performAuthorization();
@@ -127,20 +133,19 @@ class dd_cf7_ctct_admin_settings {
                 $timediff = time() - $ct;
 
                 if (!empty($options['access_token']) && !empty($options['refresh_token']) && $timediff>7200){
-                    $this->refreshToken();								
+                    $this->refreshToken();
                 } 
             }
+            if (!empty($options['access_token'])) {        
+                $check = $this->check_logged_in($options['access_token']);
+            } elseif (false !== $options) {
+                $check['error'] = __('There is a problem with the connection. Please Reauthorize', 'dd-cf7-plugin');
+                $check['logged_in'] = false;
+                $check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
+                $error = true;
+            }
         } 
-        
-        if (!empty($options['access_token'])) {        
-            $check = $this->check_logged_in($options['access_token']);
-        } elseif (false !== $options) {
-            $check['error'] = __('There is a problem with the connection. Please Reauthorize', 'dd-cf7-plugin');
-            $check['logged_in'] = false;
-            $check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
-            $error = true;
-        }
-		/* $active = 'nav-tab-active';
+        		/* $active = 'nav-tab-active';
 		?>
 		<h2 class="nav-tab-wrapper">
 			<a href="#" class="nav-tab <?php echo $active;?>">API Settings</a>
@@ -247,6 +252,13 @@ class dd_cf7_ctct_admin_settings {
 		echo '<p class="description">' . __( 'E-Mail Address to notify if there is an error.', 'dd-cf7-plugin' ) . '</p>';
 
 	}
+	
+	function render_send_email_field(){
+		$options = get_option( 'cf7_ctct_settings' );
+		$value = ( empty ( $options['send_email'] ) ) ? '0' : '1';
+		echo '<input type="checkbox" name="cf7_ctct_settings[send_email]" value="1"' . checked( $value, '1' , false) . '>';
+		echo '<p class="description">' . __( 'Send an E-Mail to the Admin when Errors occur.', 'dd-cf7-plugin' ) . '</p>';
+	}
 	function performAuthorization(){
 		// Create authorization URL
         
@@ -322,8 +334,8 @@ class dd_cf7_ctct_admin_settings {
 		$options['token_time'] = time();
 
 		update_option('cf7_ctct_settings', $options );
-		
-		return;		
+
+        return;		
 	}
     
     public function add_enabled_icon() {

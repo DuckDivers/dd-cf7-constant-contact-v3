@@ -11,7 +11,7 @@ class dd_ctct_api {
 	private $api_url = 'https://api.cc.email/v3/';
 	private $c = 0;
 	private $details = array('first_name'=>'', 'last_name'=>'', 'job_title'=>'', 'comapny_name'=>'', 'create_source'=>'', 'birthday_month'=>'', 'birthday_day'=>'', 'anniversary'=>'');
-    private $street_address = array( 'kind'=>'home', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
+    private $street_address = array( 'kind'=>'', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
 	
     public function __construct(){
 		add_action( 'wpcf7_before_send_mail', array($this, 'cf7_process_form'));
@@ -409,9 +409,12 @@ class dd_ctct_api {
             } else {
                 if ( isset( $submitted_values[ $key ] ) ) {
                     $item[$key] = ($submitted_values[ $key ]);
-                }
-                else {
-                    unset($item[$key]);
+                } else {
+					if ($key == 'kind' && !isset($ctct->key)){
+						$item['kind'] = 'home';
+					} else {
+                    	unset($item[$key]);
+					}
                 }
             }
         } 
