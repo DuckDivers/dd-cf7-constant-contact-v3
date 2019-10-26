@@ -33,7 +33,6 @@ class dd_cf7_ctct_admin_settings {
 	}
 
 	public function init_settings() {
-
 		register_setting(
 			'dd_cf7_ctct',
 			'cf7_ctct_settings'
@@ -67,21 +66,6 @@ class dd_cf7_ctct_admin_settings {
 			'cf7_ctct_settings',
 			'cf7_ctct_settings_section'
 		);
-        add_settings_field(
-			'admin_email',
-			__( 'Admin E-Mail', 'dd-cf7-plugin' ),
-			array( $this, 'render_admin_email_field' ),
-			'cf7_ctct_settings',
-			'cf7_ctct_settings_section'
-		);
-        add_settings_field(
-			'send_email',
-			__( 'E-Mail Errors', 'dd-cf7-plugin' ),
-			array( $this, 'render_send_email_field' ),
-			'cf7_ctct_settings',
-			'cf7_ctct_settings_section'
-		);
-
 	}
 	public function page_layout() {
 
@@ -97,7 +81,7 @@ class dd_cf7_ctct_admin_settings {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'dd-cf7-plugin' ) );
 		}
 		
-		$options = get_option( 'cf7_ctct_settings' ); //echo '<pre>'; print_r($options); echo '</pre>';
+		$options = get_option( 'cf7_ctct_settings' ); 
 		$lists = get_option('dd_cf7_mailing_lists');
         // Set up variables for function
         $check = array();
@@ -133,7 +117,7 @@ class dd_cf7_ctct_admin_settings {
                 $timediff = time() - $ct;
 
                 if (!empty($options['access_token']) && !empty($options['refresh_token']) && $timediff>7200){
-                    $this->refreshToken();
+                    self::refreshToken();
                 } 
             }
             if (!empty($options['access_token'])) {        
@@ -145,12 +129,11 @@ class dd_cf7_ctct_admin_settings {
                 $error = true;
             }
         } 
-        		/* $active = 'nav-tab-active';
 		?>
 		<h2 class="nav-tab-wrapper">
-			<a href="#" class="nav-tab <?php echo $active;?>">API Settings</a>
-			<a href="#" class="nav-tab">Custom Fields</a>
-		</h2> <?php */
+			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab nav-tab-active">API Settings</a>
+			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra" class="nav-tab">Additional Settings</a>
+		</h2> <?php 
 
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
@@ -239,26 +222,6 @@ class dd_cf7_ctct_admin_settings {
 
 	}
     
-    function render_admin_email_field() {
-
-		// Retrieve data from the database.
-		$options = get_option( 'cf7_ctct_settings' );
-
-		// Set default value.
-		$value = isset( $options['admin_email'] ) ? $options['admin_email'] : get_bloginfo('admin_email');
-
-		// Field output.
-		echo '<input type="email" name="cf7_ctct_settings[admin_email]" class="regular-text admin_email_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
-		echo '<p class="description">' . __( 'E-Mail Address to notify if there is an error.', 'dd-cf7-plugin' ) . '</p>';
-
-	}
-	
-	function render_send_email_field(){
-		$options = get_option( 'cf7_ctct_settings' );
-		$value = ( empty ( $options['send_email'] ) ) ? '0' : '1';
-		echo '<input type="checkbox" name="cf7_ctct_settings[send_email]" value="1"' . checked( $value, '1' , false) . '>';
-		echo '<p class="description">' . __( 'Send an E-Mail to the Admin when Errors occur.', 'dd-cf7-plugin' ) . '</p>';
-	}
 	function performAuthorization(){
 		// Create authorization URL
         
@@ -303,7 +266,7 @@ class dd_cf7_ctct_admin_settings {
         return json_decode($result);
     }
 	
-	public function refreshToken() {
+	public static function refreshToken() {
 		$options = get_option( 'cf7_ctct_settings' );
 		$refreshToken = $options['refresh_token'];
 		$clientId = $options['api_key'];
@@ -328,12 +291,20 @@ class dd_cf7_ctct_admin_settings {
         // Get Response
         $response = wp_remote_post($url, $args);
 		$tokenData = json_decode(wp_remote_retrieve_body($response));
+        $code = wp_remote_retrieve_response_code($response);
 
-		$options['refresh_token'] = $tokenData->refresh_token;
-		$options['access_token'] = $tokenData->access_token;
-		$options['token_time'] = time();
-
-		update_option('cf7_ctct_settings', $options );
+		if ($code == 200){	
+			$options['refresh_token'] = $tokenData->refresh_token;
+			$options['access_token'] = $tokenData->access_token;
+			$options['token_time'] = time();
+			update_option('cf7_ctct_settings', $options );
+		} else {
+		 	$body = "<p>An error occurred when trying to get a refresh token.  This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+	        $options = get_option('cf7_ctct_extra_settings');
+			$admin_email = esc_attr($options['admin_email']);
+                 wp_mail($admin_email, 'Constant Contact Admin Settings (line 342)', $body, $headers);
+		}
 
         return;		
 	}
@@ -412,7 +383,7 @@ class dd_cf7_ctct_admin_settings {
 	public function check_logged_in($access_token){
         $code = $this->get_code_status($access_token);
         if ($code == 401) {
-            $this->refreshToken();
+            self::refreshToken();
     		$options = get_option( 'cf7_ctct_settings' );
             $code = $this->get_code_status($options['access_token']);
         }

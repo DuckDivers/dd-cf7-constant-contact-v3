@@ -1,4 +1,4 @@
-.contact_page_dd_ctct .card {
+.contact_page_dd_ctct .card, .settings_page_dd-ctct-extra .card {
 	background: #fff none repeat scroll 0 0;
 	border: 1px solid #e5e5e5;
 	border-left: 4px solid #e5e5e5;
@@ -79,4 +79,9 @@ form.tag-generator-panel[data-id="ctct"] {
     background: rgba(176, 175, 167, 0.3);
     padding: 1px 15px;
     border-radius: 8px;
+}
+@media (max-width: 767px){
+	.contact_page_dd_ctct .card, .settings_page_dd-ctct-extra .card {
+		max-width: 100%;
+	}
 }

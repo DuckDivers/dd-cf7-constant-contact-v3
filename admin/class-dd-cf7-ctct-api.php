@@ -38,10 +38,17 @@ class dd_ctct_api {
 	}
 
     private function get_admin_email(){
-        $options = get_option('cf7_ctct_settings');
+        $options = get_option('cf7_ctct_extra_settings');
         return esc_attr($options['admin_email']);
     }
-    
+	private function wants_email(){
+		$options = get_option( 'cf7_ctct_extra_settings' );
+		if (false == $options) $options = array('send_email' => 'true');
+		// Set default value.
+		$value = isset( $options['send_email'] ) ? $options['send_email'] : 'false';
+		$send = ($options['send_email'] == 'true') ? true: false;
+		return $send;
+	}
 	public function cf7_process_form(){
 		$submitted_values = $this->get_form_data();
 		if (false !== $submitted_values){
@@ -53,9 +60,7 @@ class dd_ctct_api {
         if ( false === ($submitted_values = get_transient('ctct_to_process') ) ) {
             return;
         } 		
-        
-        $reauth = new dd_cf7_ctct_admin_settings;
-        
+               
         $submitted_values = maybe_unserialize(get_transient('ctct_to_process'));
         
         // Check if E-Mail Address is valid
@@ -70,7 +75,7 @@ class dd_ctct_api {
 			echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 73)', $body, $headers);
+				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 73)', $body, $headers);
             return false;
         }
             
@@ -80,7 +85,7 @@ class dd_ctct_api {
 			if ($this->c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
             if (isset($options['refresh_token'])) {
-                $reauth->refreshToken();	
+		        dd_cf7_ctct_admin_settings::refreshToken();	
                 $this->push_to_constant_contact();
             } else {
                 $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
@@ -102,7 +107,7 @@ class dd_ctct_api {
                 echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body = ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 105)', $body, $headers);
+				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 105)', $body, $headers);
             } 
         }    
     }
