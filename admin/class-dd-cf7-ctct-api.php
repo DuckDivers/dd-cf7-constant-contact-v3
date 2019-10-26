@@ -196,7 +196,7 @@ class dd_ctct_api {
 	
 	public function check_email_exists($email){
 		
-		$url = $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships&include_count=false";
+		$url = $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships&include_count=true";
 		
 		$args = array(
             "headers" => array(
@@ -209,16 +209,21 @@ class dd_ctct_api {
 
 		$response = wp_remote_get( $url, $args);
 		$ctct = json_decode(wp_remote_retrieve_body($response));
-      
-        if (empty($ctct->contacts) || !isset($ctct->contacts) ){
-            if ( isset ($ctct->error_key) ){
+		$code = wp_remote_retrieve_response_code($response);
+
+		if ( $code !== 200 ){
+            if ( $code == 401 ){
 				return 'unauthorized';
 			} else {
 				return false;				
 			}
 		} else {
-            return $ctct;
-		}
+			if ($ctct->contacts_count == 0) {
+				return false;
+			} else {
+            	return $ctct;
+			}
+		}	
 	}
 	
 	public function create_new_subscription($submitted_values){
@@ -380,7 +385,7 @@ class dd_ctct_api {
             $return['message'] = $body;
 			return $return;
 	    } else {
-            $return['success'] = false;
+            $return['success'] = true;
             return $return;
         }   
     }
