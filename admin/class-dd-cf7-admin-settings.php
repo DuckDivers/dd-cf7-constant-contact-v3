@@ -266,7 +266,7 @@ class dd_cf7_ctct_admin_settings {
         return json_decode($result);
     }
 	
-	public static function refreshToken() {
+	public static function refreshToken($c=1) {
 		$options = get_option( 'cf7_ctct_settings' );
 		$refreshToken = $options['refresh_token'];
 		$clientId = $options['api_key'];
@@ -303,7 +303,7 @@ class dd_cf7_ctct_admin_settings {
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 	        $options = get_option('cf7_ctct_extra_settings');
 			$admin_email = esc_attr($options['admin_email']);
-                 wp_mail($admin_email, 'Constant Contact Admin Settings (line 342)', $body, $headers);
+                 if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Admin Settings (line 306)', $body, $headers);
 		}
 
         return;		

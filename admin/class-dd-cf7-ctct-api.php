@@ -55,7 +55,7 @@ class dd_ctct_api {
 			set_transient('ctct_to_process', $submitted_values, 3 * MINUTE_IN_SECONDS );
 		}
 	}
-    public function push_to_constant_contact(){
+    public function push_to_constant_contact( $c = 1 ){
 		        
         if ( false === ($submitted_values = get_transient('ctct_to_process') ) ) {
             return;
@@ -82,15 +82,16 @@ class dd_ctct_api {
         $exists = $this->check_email_exists($submitted_values['email_address']);
         
 		if ($exists == 'unauthorized'){
-			if ($this->c > 2) return false;
+			if ($c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
+			error_log($c);
             if (isset($options['refresh_token'])) {
-		        dd_cf7_ctct_admin_settings::refreshToken();	
-                $this->push_to_constant_contact();
+		        dd_cf7_ctct_admin_settings::refreshToken($c);	
+                $this->push_to_constant_contact($c+1);
             } else {
                 $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
                 $headers = array('Content-Type: text/html; charset=UTF-8');
-                    wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 88)', $body, $headers);
+					wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 88)', $body, $headers);
                 return false;
             }
 		} elseif (false == $exists){
