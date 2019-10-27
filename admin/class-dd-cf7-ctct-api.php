@@ -9,7 +9,6 @@
 class dd_ctct_api {
     
 	private $api_url = 'https://api.cc.email/v3/';
-	private $c = 0;
 	private $details = array('first_name'=>'', 'last_name'=>'', 'job_title'=>'', 'comapny_name'=>'', 'create_source'=>'', 'birthday_month'=>'', 'birthday_day'=>'', 'anniversary'=>'');
     private $street_address = array( 'kind'=>'', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
 	
