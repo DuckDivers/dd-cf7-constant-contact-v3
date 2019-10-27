@@ -52,6 +52,7 @@ If you are connected properly, which it will show on the settings page.  Then yo
 	1. Choose the list or lists you want to assign contacts to.
 	2. This checkbox tells the plugin if you're using the shortcode from the form or whether you're using an automatic opt-in without a checkbox.
 	3. ** You must map the fields to Constant Contact **
+3. Potential Front end usage.
 
 == Changelog ==
 

@@ -80,6 +80,10 @@ form.tag-generator-panel[data-id="ctct"] {
     padding: 1px 15px;
     border-radius: 8px;
 }
+.contact_page_dd_ctct .api_callback_field{
+	width: 100%;
+	margin-bottom: .5rem;
+}
 @media (max-width: 767px){
 	.contact_page_dd_ctct .card, .settings_page_dd-ctct-extra .card {
 		max-width: 100%;

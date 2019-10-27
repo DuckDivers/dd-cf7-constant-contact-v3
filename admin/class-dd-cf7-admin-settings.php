@@ -59,13 +59,7 @@ class dd_cf7_ctct_admin_settings {
 			'cf7_ctct_settings',
 			'cf7_ctct_settings_section'
 		);
-        add_settings_field(
-			'api_callback',
-			__( 'Redirect URI', 'dd-cf7-plugin' ),
-			array( $this, 'render_api_callback_field' ),
-			'cf7_ctct_settings',
-			'cf7_ctct_settings_section'
-		);
+
 	}
 	public function page_layout() {
 
@@ -160,13 +154,26 @@ class dd_cf7_ctct_admin_settings {
 		settings_fields( 'dd_cf7_ctct' );
 		do_settings_sections( 'cf7_ctct_settings' );
 		
+				// Retrieve data from the database.
+		$options = get_option( 'cf7_ctct_settings' );
+
+		// Set default value.
+		$callback = isset( $options['api_callback'] ) ? $options['api_callback'] : admin_url() . 'admin.php?page=dd_ctct';
+
+		// Field output.
+		echo '<h4>Redirect URI:</h4>';
+		echo '<input type="text" name="cf7_ctct_settings[api_callback]" class="regular-text api_callback_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $callback ) . '" readonly>';
+		echo '<p class="description">' . __( 'This is the Redirect URI for your Constant Contact Application.', 'dd-cf7-plugin' ) . '</p>';
+
+		
 		echo '<div class="dd-ctct-submit-wrapper">';
 		if ($check['logged_in']){
 			$m2 = sprintf(__("'Please confirm you wish to disconnect from Constant Contact and remove API Keys from this application'", 'dd-cf7-plugin'));
 			$path = 'admin.php?page=dd_ctct&action=disconnect';
 			echo '<p class="submit"><a href="'.admin_url($path).'" onclick="return confirm('.$m2.');" class="button button-link-delete">Disconnect</a></p>';
+		} else {
+			submit_button($check['message']);
 		}
-		submit_button($check['message']);
 		echo '</div>';
 		echo '	</form>' . "\n";
         echo '</div>' ."\n";
@@ -198,20 +205,6 @@ class dd_cf7_ctct_admin_settings {
 
 		// Field output.
 		echo '<input type="password" name="cf7_ctct_settings[api_secret]" class="regular-text api_secret_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
-
-	}
-    
-    function render_api_callback_field() {
-
-		// Retrieve data from the database.
-		$options = get_option( 'cf7_ctct_settings' );
-
-		// Set default value.
-		$value = isset( $options['api_callback'] ) ? $options['api_callback'] : admin_url() . 'admin.php?page=dd_ctct';
-
-		// Field output.
-		echo '<input type="text" name="cf7_ctct_settings[api_callback]" class="regular-text api_callback_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '" readonly>';
-		echo '<p class="description">' . __( 'This is the Redirect URI for your Constant Contact Application.', 'dd-cf7-plugin' ) . '</p>';
 
 	}
     
