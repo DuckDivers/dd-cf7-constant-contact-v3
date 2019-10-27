@@ -112,21 +112,14 @@ class dd_cf7_ctct_admin_settings {
                 echo '<script>window.location="admin.php?page=dd_ctct"</script>';
 
             } else {
-
-                $ct = (isset($options['token_time'])) ? $options['token_time'] : time() - 8000;
-                $timediff = time() - $ct;
-
-                if (!empty($options['access_token']) && !empty($options['refresh_token']) && $timediff>7200){
-                    self::refreshToken();
-                } 
-            }
-            if (!empty($options['access_token'])) {        
-                $check = $this->check_logged_in($options['access_token']);
-            } elseif (false !== $options) {
-                $check['error'] = __('There is a problem with the connection. Please Reauthorize', 'dd-cf7-plugin');
-                $check['logged_in'] = false;
-                $check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
-                $error = true;
+				if (!empty($options['access_token'])) {        
+					$check = $this->check_logged_in($options['access_token']);
+				} elseif (false !== $options) {
+					$check['error'] = __('There is a problem with the connection. Please Reauthorize', 'dd-cf7-plugin');
+					$check['logged_in'] = false;
+					$check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
+					$error = true;
+				} 
             }
         } 
 		?>
@@ -303,7 +296,7 @@ class dd_cf7_ctct_admin_settings {
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 	        $options = get_option('cf7_ctct_extra_settings');
 			$admin_email = esc_attr($options['admin_email']);
-                 if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Admin Settings (line 306)', $body, $headers);
+                 if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Authorization Error', $body, $headers);
 		}
 
         return;		

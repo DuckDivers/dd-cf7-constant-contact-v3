@@ -83,14 +83,13 @@ class dd_ctct_api {
 		if ($exists == 'unauthorized'){
 			if ($c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
-			error_log($c);
             if (isset($options['refresh_token'])) {
 		        dd_cf7_ctct_admin_settings::refreshToken($c);	
                 $this->push_to_constant_contact($c+1);
             } else {
                 $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
                 $headers = array('Content-Type: text/html; charset=UTF-8');
-					wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 88)', $body, $headers);
+					if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
                 return false;
             }
 		} elseif (false == $exists){
@@ -107,7 +106,7 @@ class dd_ctct_api {
                 echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body = ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 105)', $body, $headers);
+				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
             } 
         }    
     }
@@ -187,7 +186,7 @@ class dd_ctct_api {
 			$body = "While attempting to retrieve the constant contact lists. \r\n";
 			$body .= "Error #:" . $code . "\r\n";
 			$body .= $ctct['error_message'];
-			wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 185)', $body);
+			if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
 			return false;
 		} else {
 			$lists_array = array();
@@ -281,7 +280,6 @@ class dd_ctct_api {
                 echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
 				print_r($json_data);
                 $body = ob_get_clean();
-				//wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
                 $return['success'] = false;
                 $return['message'] = $body;
 				return $return;
@@ -292,7 +290,6 @@ class dd_ctct_api {
                 echo "<p>Message from Constant Contact: {$message[0]->error_message}</p>";
                 echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
                 $body = ob_get_clean();
-                //wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
                 $return['success'] = false;
                 $return['message'] = $body;
                 return $return;
@@ -385,7 +382,6 @@ class dd_ctct_api {
             $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
             $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
             $body .= json_encode($json_data);			
-			//wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body);
             $return['success'] = false;
             $return['message'] = $body;
 			return $return;
