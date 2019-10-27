@@ -9,20 +9,21 @@ Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-
 This will connect Contact form 7 and Constant Contact using the Constant Contact API V3. Requires an API Key and Secret for functionality to work.  Allows use of checkbox, all lists, and updates existing records.
 
 == Description ==
 
-This is an advanced Constant Contact to Contact Form 7 Connector. This plug-in will allow you to make a connection to Constant Contact's API using OAUTH protocol.  Retrieve all of your contact lists, and allow users to sign up for a single list, or multiple lists.  This will update exsting contacts in your Constant Contact list, or add new if they don't exist.  Allows you to push basic contact fields, including 
+This is an advanced Constant Contact to Contact Form 7 Connector. This plug-in will allow you to make a connection to Constant Contact's API using OAUTH protocol.  Retrieve all of your contact lists, and allow users to sign up for a single list, or multiple lists.  This will update existing contacts in your Constant Contact list, or add new if they don't exist.  In addition to adding or updating E-Mail addresses of contacts in your list, this will also allow you to push basic contact fields, including:
 
 *   First Name
 *   Last Name
-*   Birthday
-*   Company Name
-*   Address Information including Country
+*   Full Address Information including Country
+
+Some uses for this plugin would be to add an optional checkbox to a regular contact form where users can subscribe to a single or multiple CTCT lists.  You could also include this with a product registration form, or pretty much make every form on your website a possibility for users to subscribe to your Constant Contact Lists.
 
 There will be a pro version available that can connect with any available Constant Contact field, including custom fields that you've defined in your Constant Contact account.
+
+Complete instructions can be found [How to create an API Key and Token](https://www.duckdiverllc.com/how-to-create-a-constant-contact-api-key/) and here [How to set up this plugin](https://www.duckdiverllc.com/connecting-constant-contact-and-contact-form-7/).
 
 == Installation ==
 
