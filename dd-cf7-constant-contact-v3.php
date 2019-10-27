@@ -76,3 +76,16 @@ function run_dd_cf7_constant_contact_v3() {
 
 }
 run_dd_cf7_constant_contact_v3();
+
+
+class dd_cf7_constant_contact_v3_check_wc_cf7 {
+    function __construct(){
+       add_action('admin_notices', array($this, 'on_admin_notices' ) );
+    }
+    function on_admin_notices(){
+        if (!is_plugin_active('contact-form-7/wp-contact-form-7.php')){
+            echo '<div class="error"><p>' . __('<b>Connect Contact Form 7 to Constant Contact V3</b> Requires Contact Form 7 to be installed and Activated. Please install <a target="_blank" href="https://wordpress.org/plugins/contact-form-7/">Contact Form 7</a>.', 'dd-cf7-plugin') . '</p></div>';
+        }
+    }
+}
+new dd_cf7_constant_contact_v3_check_wc_cf7;
