@@ -251,49 +251,6 @@ class dd_cf7_ctct_admin_settings {
 		$result = wp_remote_retrieve_body($response);
         return json_decode($result);
     }
-	
-	public static function refreshToken($c=1) {
-		$options = get_option( 'cf7_ctct_settings' );
-		$refreshToken = $options['refresh_token'];
-		$clientId = $options['api_key'];
-		$clientSecret = $options['api_secret'];
-        // Define base URL
-		$base = 'https://idfed.constantcontact.com/as/token.oauth2';
-        // Create full request URL
-		$url = $base . '?refresh_token=' . $refreshToken . '&grant_type=refresh_token';
-		// Set authorization header
-		// Make string of "API_KEY:SECRET"
-		$auth = $clientId . ':' . $clientSecret;
-		// Base64 encode it
-		$credentials = base64_encode($auth);
-		// Create and set the Authorization header to use the encoded credentials
-		$authorization = 'Basic ' . $credentials;
-        // Set Headers for wp_remote_post
-        $args = array(
-            "headers" => array(
-                "Authorization" => $authorization,
-            )
-        );
-        // Get Response
-        $response = wp_remote_post($url, $args);
-		$tokenData = json_decode(wp_remote_retrieve_body($response));
-        $code = wp_remote_retrieve_response_code($response);
-
-		if ($code == 200){	
-			$options['refresh_token'] = $tokenData->refresh_token;
-			$options['access_token'] = $tokenData->access_token;
-			$options['token_time'] = time();
-			update_option('cf7_ctct_settings', $options );
-		} else {
-		 	$body = "<p>An error occurred when trying to get a refresh token.  This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
-			$headers = array('Content-Type: text/html; charset=UTF-8');
-	        $options = get_option('cf7_ctct_extra_settings');
-			$admin_email = esc_attr($options['admin_email']);
-                 if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Authorization Error', $body, $headers);
-		}
-
-        return;		
-	}
     
     public function add_enabled_icon() {
 		global $pagenow, $plugin_page;
@@ -369,7 +326,7 @@ class dd_cf7_ctct_admin_settings {
 	public function check_logged_in($access_token){
         $code = $this->get_code_status($access_token);
         if ($code == 401) {
-            self::refreshToken();
+            dd_ctct_api::refreshToken();
     		$options = get_option( 'cf7_ctct_settings' );
             $code = $this->get_code_status($options['access_token']);
         }

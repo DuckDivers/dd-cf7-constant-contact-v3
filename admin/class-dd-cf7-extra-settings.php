@@ -58,24 +58,43 @@ class dd_cf7_ctct_additional_settings {
 		if ( !current_user_can( 'manage_options' ) )  {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'dd-cf7-plugin' ) );
 		}
+        $active = 'none';
+        if (isset($_GET['tab']) && $_GET['tab'] == 'custom_fields' ) {
+            $active = 'custom';
+        } else if (isset($_GET['tab']) && $_GET['tab'] == 'additional') {
+            $active = 'additional';
+        }
+        
 		?>
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab">API Settings</a>
-			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra" class="nav-tab nav-tab-active">Additional Settings</a>
+			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=additional<?php echo ($active=='additional')?' nav-tab-active': '';?>" class="nav-tab">Additional Settings</a>			
+            <a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=custom_fields" class="nav-tab<?php echo ($active=='custom')?' nav-tab-active': '';?>">Custom Fields</a>
 		</h2> <?php 
 		// Admin Page Layout
-		echo '<div class="wrap">' . "\n";
-		echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
-		echo '	<div class="card">' . "\n";
-		echo '	<form action="options.php" method="post">' . "\n";
+        if ($active == 'custom'){
+            $get_lists = new ctct_custom_fields();
+            $load_lists = $get_lists->get_custom_fields();
+            $lists = get_option('dd_cf7_ctct_custom_fields');
+            echo '<div class="wrap">' . "\n";
+            echo '	<h1>' . __('CTCT Custom Fields') . '</h1>' . "\n";
+            echo '	<div class="card">' . "\n";
+            echo '<pre>'; print_r($lists); echo '</pre>';
+            echo '  </div>
+                  </div>' . "\n";
+        } else {
+            echo '<div class="wrap">' . "\n";
+            echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
+            echo '	<div class="card">' . "\n";
+            echo '	<form action="options.php" method="post">' . "\n";
 
-		settings_fields( 'dd_cf7_ctct_extra' );
-		do_settings_sections( 'cf7_ctct_extra_settings' );
-		submit_button();
+            settings_fields( 'dd_cf7_ctct_extra' );
+            do_settings_sections( 'cf7_ctct_extra_settings' );
+            submit_button();
 
-		echo '	</form>' . "\n";
-		echo '</div></div>' . "\n";
-
+            echo '	</form>' . "\n";
+            echo '</div></div>' . "\n";
+        }
 	}
 
 	function render_admin_email_field() {

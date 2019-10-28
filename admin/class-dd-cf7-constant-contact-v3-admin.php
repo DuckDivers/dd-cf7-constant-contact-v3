@@ -70,6 +70,7 @@ class dd_cf7_constant_contact_v3_Admin {
 		include('class-dd-cf7-form-tag.php');
         include('class-dd-cf7-ctct-api.php');
 		include('class-dd-cf7-extra-settings.php');
+		include('class-dd-cf7-custom-fields.php');
     }
 	/**
 	 * Register the stylesheets for the admin area.

@@ -8,9 +8,9 @@
 
 class dd_ctct_api {
     
-	private $api_url = 'https://api.cc.email/v3/';
-	private $details = array('first_name'=>'', 'last_name'=>'', 'job_title'=>'', 'comapny_name'=>'', 'create_source'=>'', 'birthday_month'=>'', 'birthday_day'=>'', 'anniversary'=>'');
-    private $street_address = array( 'kind'=>'', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
+	protected $api_url = 'https://api.cc.email/v3/';
+	protected $details = array('first_name'=>'', 'last_name'=>'', 'job_title'=>'', 'comapny_name'=>'', 'create_source'=>'', 'birthday_month'=>'', 'birthday_day'=>'', 'anniversary'=>'');
+    protected $street_address = array( 'kind'=>'', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
 	
     public function __construct(){
 		add_action( 'wpcf7_before_send_mail', array($this, 'cf7_process_form'));
@@ -20,7 +20,7 @@ class dd_ctct_api {
 		add_action( 'wpcf7_init', array($this, 'check_auth'));
     }
 		
-	private function get_api_key(){
+	protected function get_api_key(){
 
 		$options = get_option( 'cf7_ctct_settings' );
 		
@@ -84,7 +84,7 @@ class dd_ctct_api {
 			if ($c > 2) return false;
 			$options = get_option( 'cf7_ctct_settings' );
             if (isset($options['refresh_token'])) {
-		        dd_cf7_ctct_admin_settings::refreshToken($c);	
+		        self::refreshToken($c);	
                 $this->push_to_constant_contact($c+1);
             } else {
                 $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
@@ -288,6 +288,7 @@ class dd_ctct_api {
         		echo "<p>While trying to add a new email address, there was an error</p>";
                 echo "<p>The error code was {$code}</p>";
                 echo "<p>Message from Constant Contact: {$message[0]->error_message}</p>";
+				if ($code == 400) echo "<p>" . esc_attr__("Note: Invalid Email address typically means it is a spam submission.", 'dd-cf7-plugin') . "</p>";
                 echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
                 $body = ob_get_clean();
                 $return['success'] = false;
@@ -435,4 +436,53 @@ class dd_ctct_api {
             return false;
         }
     }
+    
+    /**
+     * Moved Refresh Token to API Class
+     *
+     * @since    1.0.1
+     */
+    
+    public static function refreshToken($c=1) {
+		$options = get_option( 'cf7_ctct_settings' );
+		$refreshToken = $options['refresh_token'];
+		$clientId = $options['api_key'];
+		$clientSecret = $options['api_secret'];
+        // Define base URL
+		$base = 'https://idfed.constantcontact.com/as/token.oauth2';
+        // Create full request URL
+		$url = $base . '?refresh_token=' . $refreshToken . '&grant_type=refresh_token';
+		// Set authorization header
+		// Make string of "API_KEY:SECRET"
+		$auth = $clientId . ':' . $clientSecret;
+		// Base64 encode it
+		$credentials = base64_encode($auth);
+		// Create and set the Authorization header to use the encoded credentials
+		$authorization = 'Basic ' . $credentials;
+        // Set Headers for wp_remote_post
+        $args = array(
+            "headers" => array(
+                "Authorization" => $authorization,
+            )
+        );
+        // Get Response
+        $response = wp_remote_post($url, $args);
+		$tokenData = json_decode(wp_remote_retrieve_body($response));
+        $code = wp_remote_retrieve_response_code($response);
+
+		if ($code == 200){	
+			$options['refresh_token'] = $tokenData->refresh_token;
+			$options['access_token'] = $tokenData->access_token;
+			$options['token_time'] = time();
+			update_option('cf7_ctct_settings', $options );
+		} else {
+		 	$body = "<p>An error occurred when trying to get a refresh token.  This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+	        $options = get_option('cf7_ctct_extra_settings');
+			$admin_email = esc_attr($options['admin_email']);
+                 if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Authorization Error', $body, $headers);
+		}
+
+        return;		
+	}
 }
