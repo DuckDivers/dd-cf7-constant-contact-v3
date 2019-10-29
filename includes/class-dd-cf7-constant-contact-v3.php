@@ -67,12 +67,12 @@ class dd_cf7_constant_contact_v3 {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'DD_CF7_CONSTANT_CONTACT_V3_VERSION' ) ) {
-			$this->version = DD_CF7_CONSTANT_CONTACT_V3_VERSION;
+		if ( defined( 'DD_CF7_CONSTANT_CONTACT_V3_PREMIUM_VERSION' ) ) {
+			$this->version = DD_CF7_CONSTANT_CONTACT_V3_PREMIUM_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'dd-cf7-constant-contact-v3';
+		$this->plugin_name = 'dd-cf7-constant-contact-v3-premium';
 
 		$this->load_dependencies();
 		$this->set_locale();

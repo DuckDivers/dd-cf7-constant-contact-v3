@@ -6,9 +6,7 @@
  * @since    1.0.0
  */
 class ctct_custom_fields extends dd_ctct_api {
-    
-//	protected $api_url = 'https://api.cc.email/v3/';
-	
+
 	public function get_custom_fields(){
 	
 		$url = "{$this->api_url}contact_custom_fields";

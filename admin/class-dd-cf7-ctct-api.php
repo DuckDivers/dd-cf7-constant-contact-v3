@@ -200,7 +200,7 @@ class dd_ctct_api {
 	
 	public function check_email_exists($email){
 		
-		$url = $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships&include_count=true";
+		$url = $this->api_url . "contacts?email=".urlencode($email)."&include=street_addresses,list_memberships,custom_fields,phone_numbers&include_count=true";
 		
 		$args = array(
             "headers" => array(
@@ -248,13 +248,12 @@ class dd_ctct_api {
 		
         $content_length = strlen(json_encode($json_data));
 		
-        //error_log(json_encode($json_data));
-        
         /**
-         * Prepare the API Call Initiate CURL
+         * Prepare the API Call Initiate WP_Remote
          *
          * @since    1.0.0
          */
+        
         $url = "{$this->api_url}contacts";
         
         $args = array(
@@ -331,6 +330,7 @@ class dd_ctct_api {
 	    $return = array();
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
+		$ctct_custom = $ctct->custom_fields;
 
         // Merge List Memberships
         $list_memberships = array_unique( array_merge( $ctct->list_memberships, $submitted_values[ 'chosen-lists' ] ) );
@@ -353,14 +353,24 @@ class dd_ctct_api {
             )
          );
         
+        if (false !== get_option('dd_cf7_ctct_custom_fields')){
+			$ctct_fields = array();
+			$cstm =  get_option('dd_cf7_ctct_custom_fields');
+				foreach ($cstm as $fieldid=>$name){
+					$ctct_fields[$fieldid] = $name['label'];
+				};
+		    $custom = $this->build_custom_field_array($ctct_custom, $ctct_fields, $submitted_values);
+            if (!empty ($custom)){
+                $json_data = array_merge($json_data, array("custom_fields" => $custom));
+            }
+		}
+        
         $contact_id = $ctct_data->contacts[ 0 ]->contact_id;
 
         $content_length = strlen( json_encode( $json_data ) );
 
         $url = "{$this->api_url}contacts/{$contact_id}";
-        
-        //error_log(json_encode($json_data));
-        
+                
         $args = array(
             "headers" => array(
                         "Accept" => "*/*",
@@ -377,6 +387,9 @@ class dd_ctct_api {
         $code = wp_remote_retrieve_response_code($response);
         $message = json_decode(wp_remote_retrieve_body($response));
         
+            $return['success'] = true;
+            return $return;
+
 		if ($code !== 200) {
     		$body = "While trying to update an existing contact, there was an error \r\n";
             $body .= "Error #:" . $code . "\r\n";
@@ -422,6 +435,39 @@ class dd_ctct_api {
         } 
         
         return $item;
+    }
+    
+    public function build_custom_field_array($ctct, $item, $submitted_values){
+    /**
+     * @param $ctct = fields from ctct api object
+     * @param $item = array of fields being submitted to ctct - details or addresses
+     * @param $submitted_values = cf7 form field submissions from transient
+     * @since    1.0.0
+     */
+     
+        // Loop through form submissions and pull out any custom fields
+        $new_fields = array();
+        $new_keys = array();
+        foreach ($submitted_values as $key=>$value) {
+            if (strlen($key) > 30) {
+                $new_fields[] = array(
+                    "custom_field_id" => $key ,
+                    "value" =>$value
+                );
+                $new_keys[] = $key;
+            } 
+        }
+        
+        foreach ($ctct as $existing_fields){
+            if ( !in_array ( $existing_fields->custom_field_id, $new_keys ) ){
+                $new_fields[] = array(
+                    "custom_field_id" => $existing_fields->custom_field_id,
+                    "value" => $existing_fields->value
+                );
+            }
+        }
+        
+        return $new_fields;
     }
     /**
      * Validate the MX Record Exists
