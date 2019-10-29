@@ -278,7 +278,6 @@ class dd_ctct_api {
 				echo '<p>The following contact had previously un-subscribed from one of your lists, and can not be added via this application.</p>';
 				echo '<p>&nbsp;</p>';
                 echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
-				print_r($json_data);
                 $body = ob_get_clean();
                 $return['success'] = false;
                 $return['message'] = $body;
