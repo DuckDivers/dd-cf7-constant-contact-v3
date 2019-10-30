@@ -74,7 +74,7 @@ class dd_ctct_api {
 			echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 73)', $body, $headers);
+				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
             return false;
         }
             
