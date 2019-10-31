@@ -286,10 +286,12 @@ class dd_cf7_ctct_admin_settings {
 			update_option('cf7_ctct_settings', $options );
 		} else {
 		 	$body = "<p>An error occurred when trying to get a refresh token.  This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
-			$headers = array('Content-Type: text/html; charset=UTF-8');
+			$website = parse_url(get_bloginfo('url'))['host'];
+            $headers = array('Content-Type: text/html; charset=UTF-8');
+            $headers[] = "From: " . get_bloginfo('name') . ' <wordpress@' . $website  . '>' . PHP_EOL;
 	        $options = get_option('cf7_ctct_extra_settings');
 			$admin_email = esc_attr($options['admin_email']);
-                 if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Authorization Error', $body, $headers);
+            if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Authorization Error', $body, $headers);
 		}
 
         return;		

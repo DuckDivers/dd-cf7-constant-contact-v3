@@ -5,7 +5,7 @@ Tags: Contact Form 7, constant contact, cf7, ctct, email marketing
 Requires at least: 4.8
 Tested up to: 5.2
 Requires PHP: 7.0
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,9 @@ If you are connected properly, which it will show on the settings page.  Then yo
 3. Potential Front end usage.
 
 == Changelog ==
+
+= 1.0.1 =
+* Added site name to error reporting email for clarity.
 
 = 1.0 =
 * Initial Release
