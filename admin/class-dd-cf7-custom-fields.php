@@ -28,7 +28,7 @@ class ctct_custom_fields extends dd_ctct_api {
 
 		if ( $code !== 200 ){
             if ( $code == 401 ){
-				dd_cf7_ctct_admin_settings::refreshToken();	
+				dd_ctct_api::refreshToken();	
 			} else {
 				return $code;		
 			}

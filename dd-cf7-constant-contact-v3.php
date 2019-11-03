@@ -13,7 +13,7 @@
  * @package           dd_cf7_constant_contact_v3
  *
  * @wordpress-plugin
- * Plugin Name:       Connect Contact Form 7 to Constant Contact V3 Premium
+ * Plugin Name:       Connect Contact Form 7 to Constant Contact Premium
  * Plugin URI:        https://www.duckdiverllc.com
  * Description:       Connect Contact form 7 and Constant Contact where it appends existing users - allows for multiple list subscriptions, and conditional subscribe checkbox.
  * Version:           1.0.0

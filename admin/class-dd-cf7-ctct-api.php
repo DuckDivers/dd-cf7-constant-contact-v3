@@ -11,6 +11,7 @@ class dd_ctct_api {
 	protected $api_url = 'https://api.cc.email/v3/';
 	protected $details = array('first_name'=>'', 'last_name'=>'', 'job_title'=>'', 'comapny_name'=>'', 'create_source'=>'', 'birthday_month'=>'', 'birthday_day'=>'', 'anniversary'=>'');
     protected $street_address = array( 'kind'=>'', 'street' => '', 'city' => '', 'state' => '', 'postal_code' => '', 'country' => '' );
+	protected $phone_array = array('home_phone' => '', 'work_phone' => '', 'other_phone' => '');
 	
     public function __construct(){
 		add_action( 'wpcf7_before_send_mail', array($this, 'cf7_process_form'));
@@ -74,7 +75,7 @@ class dd_ctct_api {
 			echo '<pre>'; print_r($submitted_values); echo '</pre>';
 			$body .= ob_get_clean();
 			$headers = array('Content-Type: text/html; charset=UTF-8');
-				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error (line 73)', $body, $headers);
+				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $headers);
             return false;
         }
             
@@ -231,10 +232,17 @@ class dd_ctct_api {
 	}
 	
 	public function create_new_subscription($submitted_values){
+		
 		$return = array();
+		/**
+		 * Build Constant Contact Arrays
+		 *
+		 * @since    1.0.0
+		 */
 		$names = $this->create_new_contact_array($this->details, $submitted_values);
 		$address = $this->create_new_contact_array($this->street_address, $submitted_values);
-	       
+		$phone = $this->build_phone_number_array($ctct_phone, $this->phone_array, $submitted_values);
+		   
 		$json_data = array_merge($names, array(
 			"email_address" => array (
 				"address" => $submitted_values['email_address'],
@@ -246,7 +254,23 @@ class dd_ctct_api {
 			)
 		);
 		
-        $content_length = strlen(json_encode($json_data));
+        if (false !== get_option('dd_cf7_ctct_custom_fields')){
+			$ctct_fields = array();
+			$cstm =  get_option('dd_cf7_ctct_custom_fields');
+				foreach ($cstm as $fieldid=>$name){
+					$ctct_fields[$fieldid] = $name['label'];
+				};
+		    $custom = $this->build_custom_field_array($ctct_custom, $ctct_fields, $submitted_values);
+            if (!empty ($custom)){
+                $json_data = array_merge($json_data, array("custom_fields" => $custom));
+            }
+		}
+
+        if (!empty ($phone)) {
+			$json_data = array_merge($json_data, array( "phone_numbers" => $phone ));
+		}
+        
+		$content_length = strlen(json_encode($json_data));
 		
         /**
          * Prepare the API Call Initiate WP_Remote
@@ -277,7 +301,6 @@ class dd_ctct_api {
 				echo '<p>The following contact had previously un-subscribed from one of your lists, and can not be added via this application.</p>';
 				echo '<p>&nbsp;</p>';
                 echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
-				print_r($json_data);
                 $body = ob_get_clean();
                 $return['success'] = false;
                 $return['message'] = $body;
@@ -331,6 +354,7 @@ class dd_ctct_api {
         $ctct = $ctct_data->contacts[ 0 ];
         $ctct_addr = $ctct->street_addresses[ 0 ];
 		$ctct_custom = $ctct->custom_fields;
+		$ctct_phone = $ctct->phone_numbers;
 
         // Merge List Memberships
         $list_memberships = array_unique( array_merge( $ctct->list_memberships, $submitted_values[ 'chosen-lists' ] ) );
@@ -341,6 +365,7 @@ class dd_ctct_api {
 
         $deets = $this->build_ctct_array($ctct, $this->details, $submitted_values);
         $sa = $this->build_ctct_array($ctct_addr, $this->street_address, $submitted_values);
+		$phone = $this->build_phone_number_array($ctct_phone, $this->phone_array, $submitted_values);
 
         // Build JSON Array for Put on CTCT
         $json_data = array_merge($deets, array(
@@ -364,7 +389,11 @@ class dd_ctct_api {
                 $json_data = array_merge($json_data, array("custom_fields" => $custom));
             }
 		}
-        
+		
+		if (!empty ($phone)) {
+			$json_data = array_merge($json_data, array( "phone_numbers" => $phone ));
+		}
+		
         $contact_id = $ctct_data->contacts[ 0 ]->contact_id;
 
         $content_length = strlen( json_encode( $json_data ) );
@@ -387,22 +416,18 @@ class dd_ctct_api {
         $code = wp_remote_retrieve_response_code($response);
         $message = json_decode(wp_remote_retrieve_body($response));
         
-            $return['success'] = true;
-            return $return;
-
 		if ($code !== 200) {
     		$body = "While trying to update an existing contact, there was an error \r\n";
             $body .= "Error #:" . $code . "\r\n";
             $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
             $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
-            $body .= json_encode($json_data);			
             $return['success'] = false;
             $return['message'] = $body;
-			return $return;
 	    } else {
             $return['success'] = true;
-            return $return;
-        }   
+        }
+		
+		return $return;
     }
     
     public function build_ctct_array($ctct, $item, $submitted_values){
@@ -467,6 +492,48 @@ class dd_ctct_api {
             }
         }
         
+        return $new_fields;
+    }
+	
+    public function build_phone_number_array($ctct, $item, $submitted_values){
+    /**
+     * @param $ctct = fields from ctct api object
+     * @param $item = array of fields being submitted to ctct - details or addresses
+     * @param $submitted_values = cf7 form field submissions from transient
+     * @since Pro Version 1.0.0
+     */
+     // Loop through form submissions and pull out any custom fields
+        $new_fields = array();
+        $new_keys = array();
+        foreach ($submitted_values as $key=>$value) {
+            if ( substr($key, 0 , 5) == "phone" ) {
+				switch ($key) {
+					case 'phone_home' :
+						$new_keys[] = 'home';
+						$new_fields[] = array('phone_number' => $value, 'kind' => 'home');
+						break;
+					case 'phone_work' :	
+						$new_keys[] = 'work';
+						$new_fields[] = array('phone_number' => $value, 'kind' => 'work');
+						break;
+					case 'phone_other' :	
+						$new_keys[] = 'other';
+						$new_fields[] = array('phone_number' => $value, 'kind' => 'other');
+						break;
+				}				
+            } 
+        }
+
+		foreach ($ctct as $existing_fields){
+			
+            if ( !in_array ( $existing_fields->kind, $new_keys ) ){
+                $new_fields[] = array(
+                    "phone_number" => $existing_fields->phone_number,
+                    "kind" => $existing_fields->kind
+                );
+            }
+        }
+		
         return $new_fields;
     }
     /**

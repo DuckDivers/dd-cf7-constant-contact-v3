@@ -14,17 +14,32 @@ class dd_cf7_form_admin_settings {
         add_action( 'wpcf7_save_contact_form', array($this , 'save_contact_form' ));
 	}
 	
-	const ctct_fields = array(
+	public $ctct_fields = array(
 			'email_address' => 'E-Mail Address',
 			'first_name' => 'First Name',
 			'last_name' => 'Last Name',
-//          'phone_number' => 'Phone Number',
+            'job_title' => 'Job title',
+            'company_name' => 'Company Name',
+			'phone_home' => 'Home Phone Number',
+            'phone_work' => 'Work Phone Number',
+            'phone_other' => 'Other Phone',
 			'street' => 'Street',
 			'city' => 'City',
 			'state' => 'State',
 			'postal_code' => 'Zip/Postal Code',
 			'country' => 'Country',
 			);
+	
+	public function get_ctct_fields() {
+		$ctct_fields = $this->ctct_fields;
+		if (class_exists('ctct_custom_fields')){
+			$lists = get_option('dd_cf7_ctct_custom_fields');
+			foreach ($lists as $listid=>$name){
+				$ctct_fields[$listid] = $name['label'];
+			}
+		}
+		return $ctct_fields;
+	}
 	
 	public function add_cf7_panel($panels) {
 		if ( current_user_can( 'wpcf7_edit_contact_form' ) ) {
@@ -98,7 +113,7 @@ class dd_cf7_form_admin_settings {
             ),        
         );
 
-		$ctct_fields = $this::ctct_fields;
+		$ctct_fields = $this->get_ctct_fields();
 		
         // add all CF7 fields to CTCT settings fields
         

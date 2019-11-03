@@ -63,23 +63,31 @@ class dd_cf7_ctct_additional_settings {
             $active = 'custom';
         } else if (isset($_GET['tab']) && $_GET['tab'] == 'additional') {
             $active = 'additional';
-        }
+        } else {$active = 'additional';}
         
 		?>
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab">API Settings</a>
-			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=additional<?php echo ($active=='additional')?' nav-tab-active': '';?>" class="nav-tab">Additional Settings</a>			
+			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=additional" class="nav-tab<?php echo ($active=='additional')?' nav-tab-active': '';?>">Additional Settings</a>			
             <a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=custom_fields" class="nav-tab<?php echo ($active=='custom')?' nav-tab-active': '';?>">Custom Fields</a>
 		</h2> <?php 
 		// Admin Page Layout
         if ($active == 'custom'){
             $get_lists = new ctct_custom_fields();
             $load_lists = $get_lists->get_custom_fields();
-            $lists = get_option('dd_cf7_ctct_custom_fields');
+            $cstm = get_option('dd_cf7_ctct_custom_fields');
             echo '<div class="wrap">' . "\n";
-            echo '	<h1>' . __('CTCT Custom Fields') . '</h1>' . "\n";
+            echo '	<h1>' . __('Constant Contact Custom Fields') . '</h1>' . "\n";
             echo '	<div class="card">' . "\n";
-            echo '<pre>'; print_r($lists); echo '</pre>';
+            echo "  <p>" .__('The following is a list of your custom fields as defined in Constant Contact', 'dd-cf7-plugin') . ".</p> \r\n";
+            echo '<table class="widefat striped"><tr><th>Field ID</th><th>Field Name</th></tr>';
+            $c = 1;
+            foreach ($cstm as $fieldid => $value){
+                $class = ($c % 2 == 0) ? ' class="alternate"' : '';
+                echo "<tr{$class}><td>{$fieldid}</td><td>{$value['label']}</td></tr>";
+                $c++;
+            }
+            echo '</table>';
             echo '  </div>
                   </div>' . "\n";
         } else {

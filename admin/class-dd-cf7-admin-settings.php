@@ -120,6 +120,7 @@ class dd_cf7_ctct_admin_settings {
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab nav-tab-active">API Settings</a>
 			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra" class="nav-tab">Additional Settings</a>
+            <a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=custom_fields" class="nav-tab">Custom Fields</a>
 		</h2> <?php 
 
 		// Admin Page Layout
