@@ -383,7 +383,6 @@ class dd_ctct_api {
             $body .= "Error #:" . $code . "\r\n";
             $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
             $body .= "This was submitted through FormID: {$submitted_values['formid']} \r\n";
-            $body .= json_encode($json_data);			
             $return['success'] = false;
             $return['message'] = $body;
 			return $return;
