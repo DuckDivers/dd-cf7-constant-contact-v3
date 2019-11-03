@@ -89,3 +89,12 @@ form.tag-generator-panel[data-id="ctct"] {
 		max-width: 100%;
 	}
 }
+.dd-bulleted-list {
+	list-style: disc;
+    padding-left: 30px;
+}
+img.img-fluid {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
