@@ -27,7 +27,7 @@ script: phpunit
 branches:
   except:
     - setuplanguage: php
-dist: precise
+dist: xenial
 
 notifications:
   email:
