@@ -3,9 +3,9 @@ Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
 Tags: Contact Form 7, constant contact, cf7, ctct, email marketing
 Requires at least: 4.8
-Tested up to: 5.2
+Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

@@ -1,4 +1,4 @@
-w<?php
+<?php
 /**
  * Class for Settings Page
  * @package    dd_cf7_constant_contact_v3
