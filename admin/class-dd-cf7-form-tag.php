@@ -169,9 +169,6 @@ class dd_cf7_form_tag {
                     </div>
                 </div>
             </div>
-		<script type="text/javascript" id="test">
-			jQuery('#informationdiv').after('<div id="duckinformation" class="postbox"><h3>Need more fields for Constant Contact?</h3><div class="inside"><img src="<?php echo plugin_dir_url(__FILE__);?>img/CTCT_horizontal_logo.png" class="img-fluid"><p></p>There is a <a href="https://duckdiverllc.com/cf7-ctct-premium/">Premium Plugin</a> version to push to any of the Constant Contact fields.<ul class="dd-bulleted-list"><li>All Contact Fields like</li><ul class="dd-bulleted-list"><li>Home Phone</li><li>Business Phone</li><li>Company Name</li><li>Job Title</li></ul><li>All of your <b>Custom Fields</b></li></ul><p>Are you in need of <a href="https://duckdiverllc.com/contact/" target="_blank">Custom Development</a>? We can help.</p></div></div>');
-		</script>
         <?php 
 
         } 

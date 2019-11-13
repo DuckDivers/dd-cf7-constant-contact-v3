@@ -1,4 +1,4 @@
-<?php
+w<?php
 /**
  * Class for Settings Page
  * @package    dd_cf7_constant_contact_v3
@@ -123,7 +123,7 @@ class dd_cf7_ctct_admin_settings {
 		</h2> <?php 
 
 		// Admin Page Layout
-		echo '<div class="wrap">' . "\n";
+		echo '<div class="wrap" id="dd-cf7-ctct">' . "\n";
         echo '  <img src="'.plugin_dir_url(__FILE__) .'/img/CTCT_horizontal_logo.png">';
         echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
         echo '<div class="card">' . "\n";

@@ -1,4 +1,4 @@
-.contact_page_dd_ctct .card, .settings_page_dd-ctct-extra .card {
+#dd-cf7-ctct .card, .settings_page_dd-ctct-extra .card {
 	background: #fff none repeat scroll 0 0;
 	border: 1px solid #e5e5e5;
 	border-left: 4px solid #e5e5e5;
@@ -12,23 +12,23 @@
 form.tag-generator-panel[data-id="ctct"] {
     height: 550px;
 }
-.contact_page_dd_ctct .card.active {
+#dd-cf7-ctct .card.active {
 	border-color: #00a0d2;
 }
 
-.contact_page_dd_ctct .card img.icon {
+#dd-cf7-ctct .card img.icon {
 	float: left;
 	margin: 8px 8px 8px -8px;
 }
 
-.contact_page_dd_ctct .card h2.title {
+#dd-cf7-ctct .card h2.title {
 	float: left;
 	max-width: 240px;
 	font-size: 1.3em;
 	font-weight: 600;
 }
 
-.contact_page_dd_ctct .card .infobox {
+#dd-cf7-ctct .card .infobox {
 	float: right;
 	font-size: 13px;
 	color: #666;
@@ -37,19 +37,19 @@ form.tag-generator-panel[data-id="ctct"] {
 	max-width: 240px;
 }
 
-.contact_page_dd_ctct .card .inside .form-table th {
+#dd-cf7-ctct .card .inside .form-table th {
 	padding: 15px 10px 15px 0;
 	width: 160px;
 }
 
-.contact_page_dd_ctct .card .inside .form-table td {
+#dd-cf7-ctct .card .inside .form-table td {
 	padding: 10px 10px;
 }
 
-.contact_page_dd_ctct .card .checkboxes li {
+#dd-cf7-ctct .card .checkboxes li {
 	margin: 0;
 }
-.contact_page_dd_ctct .bold-label {
+#dd-cf7-ctct .bold-label {
 	font-weight: bold;
 	display: inline-block;
 	padding-right: 1rem;
@@ -70,31 +70,22 @@ form.tag-generator-panel[data-id="ctct"] {
     justify-content: space-between;
 	width: 100%;
 }
-.contact_page_dd_ctct .alert-danger {
+#dd-cf7-ctct .alert-danger {
     background: rgba(255, 0, 0, 0.3);
     padding: 1px 15px;
     border-radius: 8px;
 }
-.contact_page_dd_ctct .alert-info {
+#dd-cf7-ctct .alert-info {
     background: rgba(176, 175, 167, 0.3);
     padding: 1px 15px;
     border-radius: 8px;
 }
-.contact_page_dd_ctct .api_callback_field{
+#dd-cf7-ctct .api_callback_field{
 	width: 100%;
 	margin-bottom: .5rem;
 }
 @media (max-width: 767px){
-	.contact_page_dd_ctct .card, .settings_page_dd-ctct-extra .card {
+	#dd-cf7-ctct .card, .settings_page_dd-ctct-extra .card {
 		max-width: 100%;
 	}
-}
-.dd-bulleted-list {
-	list-style: disc;
-    padding-left: 30px;
-}
-img.img-fluid {
-    max-width: 100%;
-    height: auto;
-    display: block;
 }
