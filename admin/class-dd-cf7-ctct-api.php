@@ -454,14 +454,17 @@ class dd_ctct_api {
 	
 	public function retry_from_failed(){
 		global $wpdb;
-		$query = $wpdb->get_results("SELECT * from `{$wpdb->prefix}options` WHERE `option_name` LIKE '%_transient_ctct_process_failure%';");
+        $table = "{$wpdb->prefix}options";
+		$query = $wpdb->get_results("SELECT * from `{$table}` WHERE `option_name` LIKE '%_transient_ctct_process_failure%';");
 		
 		foreach ($query as $t){
 			$submitted_values = maybe_unserialize($t->option_value);
 			$retry = $this->push_to_constant_contact(1, $submitted_values);
-            delete_transient($t->option_value);
+            $id = $t->option_id;
+            $wpdb->delete($table, array('option_id' => $id));
             if ($retry !== true) {
-                set_transient($submitted_values, $t->option_value, 5 * DAY_IN_SECONDS);
+                $tname = 'ctct_process_failure_' . time();
+                set_transient($submitted_values, $tname, 5 * DAY_IN_SECONDS);
             }
 		}
 	}
