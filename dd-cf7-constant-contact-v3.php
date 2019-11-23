@@ -88,3 +88,19 @@ class dd_cf7_constant_contact_v3_check_wc_cf7 {
     }
 }
 new dd_cf7_constant_contact_v3_check_wc_cf7;
+
+// Scheduled Action Hook
+function dd_do_retry_failed_ctct_action( ) {
+    // Trigger a retry of any failures because of CTCT Connection Failure
+	$resend = new dd_ctct_api();
+	$resend->retry_from_failed();
+}
+add_action( 'dd_do_retry_failed_ctct_action', 'dd_do_retry_failed_ctct_action' );
+
+// Schedule Cron Job Event
+function dd_ctct_retry_failures() {
+	if ( ! wp_next_scheduled( 'dd_do_retry_failed_ctct_action' ) ) {
+		wp_schedule_event( time(), 'twicedaily', 'dd_do_retry_failed_ctct_action' );
+	}
+}
+add_action( 'wp', 'dd_ctct_retry_failures' );
