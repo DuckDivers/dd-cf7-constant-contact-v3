@@ -129,9 +129,9 @@ class dd_cf7_ctct_admin_settings {
         echo '<div class="card">' . "\n";
 		
         // Check for API Errors
-		if (isset($options['error']) && !empty($options['error'])) {
+		if (isset($check['error']) && !empty($check['error'])) {
 			echo '<div class="alert-danger"><h4>' . __('There has been an error processing your credentials', 'dd-cf7-plugin'). '</h4>';	
-			echo '<p>' . $options['error'] . '</p></div>';
+			echo '<p>' . $check['error'] . '</p></div>';
 		} elseif ( false !== $error && false !== $options ) {
 			echo '<div class="alert-danger"><h4>' . __('There has been an error connecting to the Constant Contact API.', 'dd-cf7-plugin'). '</h4>';	
 			echo '<p>' . $check['error'] . '</p></div>';
@@ -145,7 +145,7 @@ class dd_cf7_ctct_admin_settings {
         _e('These fields are required to connect this application to your Constant Contact account. You must set up a Constant Contact developer account if you don&rsquo;t already have one.' , 'dd-cf7-plugin');
         echo ' <a href="https://v3.developer.constantcontact.com/api_guide/getting_started.html" target="_blank">' . __('Constant Contact Guide', 'dd-cf7-plugin') . '</a>';
         echo '</p>';
-		if ($check['logged_in']){ 
+		if ($check['logged_in'] && $check['logged_in'] !== 'unset'){ 
 			echo '<p><span class="dashicons dashicons-yes success" style="color: green;"></span> ';
 			_e('You are connected to Constant Contact', 'dd-cf7-plugin');
 			echo '</p>';
@@ -167,10 +167,13 @@ class dd_cf7_ctct_admin_settings {
 
 		
 		echo '<div class="dd-ctct-submit-wrapper">';
-		if ($check['logged_in']){
+		
+		if ($check['logged_in'] && $check['logged_in'] !== 'unset'){
 			$m2 = sprintf(__("'Please confirm you wish to disconnect from Constant Contact and remove API Keys from this application'", 'dd-cf7-plugin'));
 			$path = 'admin.php?page=dd_ctct&action=disconnect';
 			echo '<p class="submit"><a href="'.admin_url($path).'" onclick="return confirm('.$m2.');" class="button button-link-delete">Disconnect</a></p>';
+		} elseif ($check['logged_in'] == 'unset') {
+			echo '<p class="submit"><a href="#" class="disabled button button-link-delete">Status Pending</a></p>';
 		} else {
 			submit_button($check['message']);
 		}
@@ -375,6 +378,7 @@ class dd_cf7_ctct_admin_settings {
     		$options = get_option( 'cf7_ctct_settings' );
             $code = $this->get_code_status($options['access_token']);
         }
+		error_log($code);
         $error = null;        
         switch ($code){
             case 200:
@@ -385,8 +389,8 @@ class dd_cf7_ctct_admin_settings {
                 $logged_in = false;
                 break;
             case 501:
-                $error = esc_html("Our internal service is temporarily unavailable.");
-                $logged_in = false;
+                $error = __("<p>The Constant Contact API service is temporarily unavailable. You may check the status of the Constant Contact API at <a href=\"https://status.constantcontact.com\" target=\"_blank\">API Status</a></p>This plugin will continue to store contacts until the API is active.", 'dd-cf7-plugin');
+                $logged_in = 'unset';
                 break;    
             case 500:
                 $error = "There was a problem with our internal service.";
@@ -397,7 +401,13 @@ class dd_cf7_ctct_admin_settings {
                 $error = "Undefined Error Occurred. Please check your settings, API Key, and API Secret.";
                 break;
         }
-		$message = ($logged_in) ? __('Update Settings', 'dd-cf7-plugin') : __('Connect to Constant Contact', 'dd-cf7-plugin');
+		if ($logged_in) {
+			$message = __('Update Settings', 'dd-cf7-plugin');
+		} else if ($logged_in == 'unset')	{
+			$message = __('Unable to get status', 'dd-cf7-plugin');
+		} else {
+			$message = __('Connect to Constant Contact', 'dd-cf7-plugin');
+		}
         
         $check = array('message'=>$message, 'error'=>$error, 'logged_in' => $logged_in);
         
@@ -415,7 +425,7 @@ class dd_cf7_ctct_admin_settings {
 
         $response = wp_remote_get('https://api.cc.email/v3/contact_lists', $args);
         $code = wp_remote_retrieve_response_code($response);
-        
+		if (empty($code)) $code = '501';
         return $code;
     }
 	public function add_links_to_plugin_listing($links, $file){

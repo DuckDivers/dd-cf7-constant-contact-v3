@@ -1,11 +1,11 @@
 === Connect Contact Form 7 to Constant Contact ===
 Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
-Tags: Contact Form 7, constant contact, cf7, ctct, email marketing
+Tags: Contact Form 7, constant contact, cf7, ctct, email marketing, api
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 1.0.2
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,12 @@ This is an advanced Constant Contact to Contact Form 7 Connector. This plug-in w
 *   Full Address Information including Country
 
 Some uses for this plugin would be to add an optional checkbox to a regular contact form where users can subscribe to a single or multiple CTCT lists.  You could also include this with a product registration form, or pretty much make every form on your website a possibility for users to subscribe to your Constant Contact Lists.
+
+### Additional Features
+* Spam Prevention - Submitted e-mail addresses are subjected to a domain verification script, before they're submitted to Constant Contact.  This helps keep your contact list cleaner.
+* Failsafe Methods- In the event that Constant Contact's API is down, the plugin will store failed attempts and retry twice daily until they are successfully added.
+* Error Reporting - If email addresses are submitted and rejected, an email is sent to the admin. Admin will be informed of users who may have unsubscribed previously and other constant contact error codes.
+* Authentication Failure Notification - in the event that the authorization to constant contact is lost, the admin will get a notification to re-authorize the application.
 
 There will be a pro version available that can connect with any available Constant Contact field, including custom fields that you've defined in your Constant Contact account.
 
