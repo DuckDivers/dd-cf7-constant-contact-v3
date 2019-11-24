@@ -16,7 +16,7 @@
  * Plugin Name:       Connect Contact Form 7 to Constant Contact V3
  * Plugin URI:        https://www.duckdiverllc.com
  * Description:       Connect Contact form 7 and Constant Contact where it appends existing users - allows for multiple list subscriptions, and conditional subscribe checkbox.
- * Version:           1.0.2
+ * Version:           1.1
  * Author:            Howard Ehrenberg
  * Author URI:        https://www.howardehrenberg.com
  * License:           GPL-2.0+
@@ -30,7 +30,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'DD_CF7_CONSTANT_CONTACT_V3_VERSION', '1.0.2' );
+define( 'DD_CF7_CONSTANT_CONTACT_V3_VERSION', '1.1' );
 
 /**
  * The code that runs during plugin activation.
@@ -88,3 +88,19 @@ class dd_cf7_constant_contact_v3_check_wc_cf7 {
     }
 }
 new dd_cf7_constant_contact_v3_check_wc_cf7;
+
+// Scheduled Action Hook
+function dd_do_retry_failed_ctct_action( ) {
+    // Trigger a retry of any failures because of CTCT Connection Failure
+	$resend = new dd_ctct_api();
+	$resend->retry_from_failed();
+}
+add_action( 'dd_do_retry_failed_ctct_action', 'dd_do_retry_failed_ctct_action' );
+
+// Schedule Cron Job Event
+function dd_ctct_retry_failures() {
+	if ( ! wp_next_scheduled( 'dd_do_retry_failed_ctct_action' ) ) {
+		wp_schedule_event( time(), 'daily', 'dd_do_retry_failed_ctct_action' );
+	}
+}
+add_action( 'wp', 'dd_ctct_retry_failures' );

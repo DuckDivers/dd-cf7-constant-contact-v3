@@ -23,9 +23,11 @@ class dd_ctct_api {
 	private function get_api_key(){
 
 		$options = get_option( 'cf7_ctct_settings' );
-		
-		return $options['access_token'];
-
+		if (isset($options['access_token'])){
+			return $options['access_token'];
+		} else {
+			return null;	
+		}
 	}
 	
 	public function check_auth(){
@@ -60,13 +62,15 @@ class dd_ctct_api {
 			set_transient('ctct_to_process', $submitted_values, 3 * MINUTE_IN_SECONDS );
 		}
 	}
-    public function push_to_constant_contact( $c = 1 ){
-		        
-        if ( false === ($submitted_values = get_transient('ctct_to_process') ) ) {
-            return;
-        } 		
-               
-        $submitted_values = maybe_unserialize(get_transient('ctct_to_process'));
+    public function push_to_constant_contact( $c = 1, $failed = null ){
+		if (null !== $failed){
+			$submitted_values = $failed;			
+		} else {
+			if ( false === ($submitted_values = get_transient('ctct_to_process') ) ) {
+				return;
+			} 		
+			$submitted_values = maybe_unserialize(get_transient('ctct_to_process'));
+		}
         
         // Check if E-Mail Address is valid
         
@@ -84,9 +88,12 @@ class dd_ctct_api {
         }
             
         $exists = $this->check_email_exists($submitted_values['email_address']);
-        
+		$tname = 'ctct_process_failure_' . time();
 		if ($exists == 'unauthorized'){
-			if ($c > 2) return false;
+			if ($c > 2) {
+				set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);	
+				return false;
+			}
 			$options = get_option( 'cf7_ctct_settings' );
             if (isset($options['refresh_token'])) {
 		        dd_cf7_ctct_admin_settings::refreshToken($c);	
@@ -94,24 +101,31 @@ class dd_ctct_api {
             } else {
                 $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
 					if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
+				set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);
                 return false;
             }
 		} elseif (false == $exists){
 			$ctct = $this->create_new_subscription($submitted_values);
+		} elseif ($exists == 'connection_error') {
+			set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);
+            return false;
 		} else {
 			$ctct = $this->update_contact($submitted_values, $exists);
         }
+
 		// If API Call Failed
-        
-        if (isset($ctct)){        
+
+		if (isset($ctct)){        
 		  if (true !== $ctct['success']){
 			ob_start();
                 echo "{$ctct['message']}\r\n\r\n";  
                 echo '<pre>'; print_r($submitted_values); echo '</pre>';
-			$body = ob_get_clean();
+				$body = ob_get_clean();
 				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
+                return false;
             } 
-        }    
+        }
+        return true;
     }
     
 	public function get_form_data(){
@@ -217,7 +231,9 @@ class dd_ctct_api {
 		$response = wp_remote_get( $url, $args);
 		$ctct = json_decode(wp_remote_retrieve_body($response));
 		$code = wp_remote_retrieve_response_code($response);
-
+        if (empty($code)) {
+			return 'connection_error';
+		}
 		if ( $code !== 200 ){
             if ( $code == 401 ){
 				return 'unauthorized';
@@ -251,8 +267,6 @@ class dd_ctct_api {
 		
         $content_length = strlen(json_encode($json_data));
 		
-        //error_log(json_encode($json_data));
-        
         /**
          * Prepare the API Call Initiate CURL
          *
@@ -274,6 +288,7 @@ class dd_ctct_api {
         $response = wp_remote_post($url, $args);
         $code = wp_remote_retrieve_response_code($response);
 		$message = json_decode(wp_remote_retrieve_body($response));
+		if (empty($code)) $code = 503;
         
         if ($code !== 201){
             if ($code == 409){
@@ -436,4 +451,21 @@ class dd_ctct_api {
             return false;
         }
     }
+	
+	public function retry_from_failed(){
+		global $wpdb;
+        $table = "{$wpdb->prefix}options";
+		$query = $wpdb->get_results("SELECT * from `{$table}` WHERE `option_name` LIKE '%_transient_ctct_process_failure%';");
+		
+		foreach ($query as $t){
+			$submitted_values = maybe_unserialize($t->option_value);
+			$retry = $this->push_to_constant_contact(1, $submitted_values);
+            $id = $t->option_id;
+            $wpdb->delete($table, array('option_id' => $id));
+            if ($retry !== true) {
+                $tname = 'ctct_process_failure_' . time();
+                set_transient($submitted_values, $tname, 5 * DAY_IN_SECONDS);
+            }
+		}
+	}
 }
