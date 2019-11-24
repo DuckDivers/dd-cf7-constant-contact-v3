@@ -62,6 +62,11 @@ If you are connected properly, which it will show on the settings page.  Then yo
 
 == Changelog ==
 
+= 1.1 =
+* Add scheduled action to check for failures.
+* Add error handling when API is down.
+* Fix error output on settings page.
+
 = 1.0.1 =
 * Added site name to error reporting email for clarity.
 
