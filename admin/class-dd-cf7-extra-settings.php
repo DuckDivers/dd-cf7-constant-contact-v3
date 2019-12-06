@@ -164,7 +164,7 @@ class dd_cf7_ctct_additional_settings {
 						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
 					<?php endforeach;?>
 				</select>
-				<p class="info"><?php echo esc_html__('You may choose multiple lists, or use the ctct form tag on the form.', 'dd-cf7-plugin');?></p>
+				<p class="info"><?php echo esc_html__('You may choose multiple lists.', 'dd-cf7-plugin');?></p>
             <?php else :?>
             <h3><?php echo esc_html__('You must enter your constant contact settings before completing these fields', 'dd-cf7-plugin');?></h3>
             <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
