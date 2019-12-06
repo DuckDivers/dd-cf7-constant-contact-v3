@@ -57,6 +57,7 @@ class dd_cf7_constant_contact_v3_Admin {
 		new dd_cf7_form_tag;
         new dd_ctct_api;
 		new dd_cf7_ctct_additional_settings;
+        new dd_wc_ctct_settings;
 	}
     
     /**
@@ -70,6 +71,7 @@ class dd_cf7_constant_contact_v3_Admin {
 		include('class-dd-cf7-form-tag.php');
         include('class-dd-cf7-ctct-api.php');
 		include('class-dd-cf7-extra-settings.php');
+        include('class-dd-wc-ctct.php');
     }
 	/**
 	 * Register the stylesheets for the admin area.

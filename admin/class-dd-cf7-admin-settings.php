@@ -115,13 +115,13 @@ class dd_cf7_ctct_admin_settings {
 					$error = true;
 				} 
             }
-        } 
+        }
+        settings_errors();
 		?>
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab nav-tab-active">API Settings</a>
 			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra" class="nav-tab">Additional Settings</a>
 		</h2> <?php 
-
 		// Admin Page Layout
 		echo '<div class="wrap" id="dd-cf7-ctct">' . "\n";
         echo '  <img src="'.plugin_dir_url(__FILE__) .'/img/CTCT_horizontal_logo.png">';

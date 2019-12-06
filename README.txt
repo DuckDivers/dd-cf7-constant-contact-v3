@@ -1,15 +1,15 @@
 === Connect Contact Form 7 to Constant Contact ===
 Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
-Tags: Contact Form 7, constant contact, cf7, ctct, email marketing, api
+Tags: Contact Form 7, constant contact, cf7, ctct, email marketing, api, woocommerce
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This will connect Contact form 7 and Constant Contact using the Constant Contact API V3. Requires an API Key and Secret for functionality to work.  Allows use of checkbox, all lists, and updates existing records.
+This will connect Contact form 7 (or WooCommerce Checkou) to Constant Contact using the Constant Contact API V3. Requires an API Key and Secret for functionality to work.  Allows use of checkbox, all lists, and updates existing records.
 
 == Description ==
 
@@ -26,8 +26,7 @@ Some uses for this plugin would be to add an optional checkbox to a regular cont
 * Failsafe Methods- In the event that Constant Contact's API is down, the plugin will store failed attempts and retry twice daily until they are successfully added.
 * Error Reporting - If email addresses are submitted and rejected, an email is sent to the admin. Admin will be informed of users who may have unsubscribed previously and other constant contact error codes.
 * Authentication Failure Notification - in the event that the authorization to constant contact is lost, the admin will get a notification to re-authorize the application.
-
-There will be a pro version available that can connect with any available Constant Contact field, including custom fields that you've defined in your Constant Contact account.
+* Add Opt-In Checkbox to WooCommerce Checkout
 
 Complete instructions can be found [How to create an API Key and Token](https://www.duckdiverllc.com/how-to-create-a-constant-contact-api-key/) and here [How to set up this plugin](https://www.duckdiverllc.com/connecting-constant-contact-and-contact-form-7/).
 
@@ -61,6 +60,9 @@ If you are connected properly, which it will show on the settings page.  Then yo
 3. Potential Front end usage.
 
 == Changelog ==
+
+= 1.2 =
+* Add WooCommerce Opt In Checkbox to Checkout.
 
 = 1.1 =
 * Add scheduled action to check for failures.

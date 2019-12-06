@@ -49,6 +49,36 @@ class dd_cf7_ctct_additional_settings {
 			'cf7_ctct_extra_settings',
 			'cf7_ctct_extra_settings_section'
 		);
+        if ( 
+              in_array( 
+                'woocommerce/woocommerce.php', 
+                apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) 
+              ) 
+            ) {
+            add_settings_field(
+                'add_to_wc_checkout', 
+                __( 'Add to WooCommerce Checkout?'),
+                array( $this, 'render_add_to_wc_field'),
+                'cf7_ctct_extra_settings',
+                'cf7_ctct_extra_settings_section'
+            );
+
+            add_settings_field(
+                'wc_checkout_lists', 
+                __( 'Choose WooCommerce CTCT Lists?'),
+                array( $this, 'render_choose_wc_list'),
+                'cf7_ctct_extra_settings',
+                'cf7_ctct_extra_settings_section'
+            );
+
+            add_settings_field(
+                'ctct_wc_checkout_text', 
+                __( 'Opt-in Text?'),
+                array( $this, 'render_wc_opt_in'),
+                'cf7_ctct_extra_settings',
+                'cf7_ctct_extra_settings_section'
+                );
+            }
 
 	}
 
@@ -106,4 +136,52 @@ class dd_cf7_ctct_additional_settings {
 		echo '<span class="description">' . __( 'Send an E-Mail to the Admin when Errors occur.', 'dd-cf7-plugin' ) . '</span>';
 
 	}
+	
+    function render_add_to_wc_field() {
+		// Retrieve data from the database.
+		$options = get_option( 'cf7_ctct_extra_settings' );
+
+		// Set default value.
+		$value = isset( $options['add_to_wc_checkout'] ) ? $options['add_to_wc_checkout'] : '';
+
+		// Field output.
+		echo '<input type="checkbox" name="cf7_ctct_extra_settings[add_to_wc_checkout]" class="add_to_wc_checkout_field" value="checked" ' . checked( $value, 'checked', false ) . '> ';
+		echo '<span class="description">' . __( 'Adds an opt-in box on the checkout for WooCommerce', 'dd-cf7-plugin' ) . '</span>';
+
+	}
+    
+    function render_choose_wc_list(){
+        wp_enqueue_script('dd-cf7-constant-contact-v3');
+		$options = get_option( 'cf7_ctct_extra_settings' );
+		$settings = isset( $options['wc_checkout_lists'] ) ? $options['wc_checkout_lists'] : array();
+		$lists = get_option('dd_cf7_mailing_lists');
+        ?>
+            <?php if (false !== $lists) :?>
+				<select id="list" class="select2" name="cf7_ctct_extra_settings[wc_checkout_lists][]" multiple>
+					<?php foreach ($lists as $list => $name):
+                        $selected = (isset($options['wc_checkout_lists']) && in_array( $list, $settings ) )? ' selected="selected" ' : ''; 
+                        ?>
+						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
+					<?php endforeach;?>
+				</select>
+				<p class="info"><?php echo esc_html__('You may choose multiple lists, or use the ctct form tag on the form.', 'dd-cf7-plugin');?></p>
+            <?php else :?>
+            <h3><?php echo esc_html__('You must enter your constant contact settings before completing these fields', 'dd-cf7-plugin');?></h3>
+            <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
+            <?php endif;?>
+	    <?php
+        
+    }
+    
+    function render_wc_opt_in(){
+        // Retrieve data from the database.
+		$options = get_option( 'cf7_ctct_extra_settings' );
+
+		// Set default value.
+		$value = isset( $options['ctct_wc_checkout_text'] ) ? $options['ctct_wc_checkout_text'] : 'Please sign me up for your mailing list.';
+
+		// Field output.
+        echo '<input type="text" name="cf7_ctct_extra_settings[ctct_wc_checkout_text]" class="regular-text ctct_wc_checkout_text_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
+
+    }
 }
