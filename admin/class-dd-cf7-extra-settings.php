@@ -88,6 +88,12 @@ class dd_cf7_ctct_additional_settings {
 		if ( !current_user_can( 'manage_options' ) )  {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'dd-cf7-plugin' ) );
 		}
+        if (isset($_GET['do']) && $_GET['do'] == 'refresh_lists') {
+            $api = new dd_ctct_api;
+            $api->get_lists();
+            $url = admin_url(). 'options-general.php?page=dd-ctct-extra';
+            echo "<script>window.location.href='".$url."'</script>";
+        }
 		?>
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab">API Settings</a>
@@ -165,6 +171,7 @@ class dd_cf7_ctct_additional_settings {
 					<?php endforeach;?>
 				</select>
 				<p class="info"><?php echo esc_html__('You may choose multiple lists.', 'dd-cf7-plugin');?></p>
+                <p class="info"><a class="button" href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&do=refresh_lists">Refresh Mailing List Cache</a>
             <?php else :?>
             <h3><?php echo esc_html__('You must enter your constant contact settings before completing these fields', 'dd-cf7-plugin');?></h3>
             <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>

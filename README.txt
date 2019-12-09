@@ -1,11 +1,11 @@
 === Connect Contact Form 7 to Constant Contact ===
 Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
-Tags: Contact Form 7, constant contact, cf7, ctct, email marketing, api, woocommerce
+Tags: Contact, Form, 7, constant, contact, cf7, ctct, email, marketing, api, woocommerce, Contact Form 7, constant contact
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ If you are connected properly, which it will show on the settings page.  Then yo
 3. Potential Front end usage.
 
 == Changelog ==
+
+= 1.2.1=
+Add Refresh Lists
 
 = 1.2 =
 * Add WooCommerce Opt In Checkbox to Checkout.
