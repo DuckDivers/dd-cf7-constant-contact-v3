@@ -5,7 +5,7 @@ Tags: Contact, Form, 7, constant, contact, cf7, ctct, email, marketing, api, woo
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,11 @@ Yes.  There is a complete walkthrough here [How to create an API Key and Token](
 
 If you are connected properly, which it will show on the settings page.  Then you must make sure you map your fields and tell the plugin if you are using the form tags or not.  See Screenshot #2 for the settings tab.
 
+= Can I add Multiple Lists to the opt-in checkbox form tag? =
+
+Yes, you can do this by using the list: option in the form tag (shortcode) multiple times, like this:
+`[ctct ctct-815 list:f49xxxx0-0737-xxxx-a758-d4ae5292c4dd list:8dxxxx80-6131-xxxx-a4b4-d4ae528442b5]`
+
 == Screenshots ==
 
 1. Admin View of Constant Contact settings page.
@@ -61,7 +66,10 @@ If you are connected properly, which it will show on the settings page.  Then yo
 
 == Changelog ==
 
-= 1.2.1=
+= 1.2.2 =
+Enable Multiple Lists on Opt-In
+
+= 1.2.1 =
 Add Refresh Lists
 
 = 1.2 =

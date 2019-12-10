@@ -37,8 +37,8 @@ class dd_cf7_form_tag {
 		$atts['class'] = $tag->get_option( 'class' )[0];
 		$atts['id'] = $tag->get_option( 'id' , 'id', true);
 		$atts['message'] = ( empty ($tag->get_option('ctct_label') ) ) ? 'Sign me up for your mailing list' : str_replace('+', ' ', $tag->get_option('ctct_label')[0]);
-   		$listid = $tag->get_option('list')[0];
-		$checked = ($tag->get_option('checked')[0]) ? $listid : '0';
+   		$listid = $tag->get_option('list');
+		$checked = ($tag->get_option('checked')[0]) ? '1' : '0';
 		$inputid = (!empty($atts['id'])) ? 'id="'.$atts['id'].'" ' : 'ctct-form-'. $tag->name ;
     
         ob_start();
@@ -50,7 +50,10 @@ class dd_cf7_form_tag {
         <span class="wpcf7-form-control-wrap <?php echo $tag->name;?>">
             <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $inputid;?>">
                 <span class="wpcf7-list-item-label">
-                <input id="<?php echo $inputid;?>" type="checkbox" name="ctct-list[<?php echo $tag->name;?>]" value="<?php echo $listid;?>" <?php checked($checked, $listid);?>>
+                    <?php foreach ($listid as $list){
+                        echo "<input type='hidden' name='ctct-list[]' value='$list'>";
+                    }?>
+                    <input id="<?php echo $inputid;?>" type="checkbox" name="ctct-list-optin" value="1" <?php checked($checked, '1');?>>
                 <label for=<?php echo $inputid;?>><?php echo $atts['message'];?></label></span>
             </span>
         </span>

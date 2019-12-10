@@ -138,7 +138,12 @@ class dd_ctct_api {
             $posted_data = $submission->get_posted_data();    
         }
 
+        if (!isset($posted_data['ctct-list-optin']) ){
+                return false;  
+        } 
+        
         $settings = get_post_meta( $posted_data['_wpcf7'] , '_ctct_cf7', true );
+        
 		/**
 		 * Check to see if the checkbox option is used or not
 		 *
@@ -152,8 +157,7 @@ class dd_ctct_api {
 					   $ctct_list[] = $listid;
                      }
 				}
-            }
-            
+            }          
 			if (!empty($ctct_list)){
 				$submitted_values['chosen-lists'] = $ctct_list;
 			} else {
