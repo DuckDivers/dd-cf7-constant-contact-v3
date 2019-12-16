@@ -378,7 +378,6 @@ class dd_cf7_ctct_admin_settings {
     		$options = get_option( 'cf7_ctct_settings' );
             $code = $this->get_code_status($options['access_token']);
         }
-		error_log($code);
         $error = null;        
         switch ($code){
             case 200:

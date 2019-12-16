@@ -11,7 +11,8 @@ class dd_cf7_form_tag {
 
 	public function __construct(){
 		add_action( 'wpcf7_init', array($this , 'dd_ctct_add_form_tag' ) );
-        add_action( 'admin_init', array( $this, 'init_tag_generator'), 99 ); 
+        add_action( 'admin_init', array( $this, 'init_tag_generator'), 99 );
+		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_on_cf7_only'));
 	}
  
 	public function dd_ctct_add_form_tag() {
@@ -43,17 +44,17 @@ class dd_cf7_form_tag {
     
         ob_start();
         if ($hide) : ?>
-        
-        <input type="hidden" name="ctct-list[<?php echo $tag->name;?>]" id="<?php echo $inputid;?>" value="<?php echo $listid;?>" /> 
-        
+        <?php foreach ($listid as $list) : ?>
+			<input type="hidden" name="ctct-list[]" id="<?php echo $inputid;?>" value="<?php echo $list;?>" /> 
+		<?php endforeach;?>
         <?php else: ?>         
         <span class="wpcf7-form-control-wrap <?php echo $tag->name;?>">
             <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $inputid;?>">
                 <span class="wpcf7-list-item-label">
                     <?php foreach ($listid as $list){
-                        echo "<input type='hidden' name='ctct-list[]' value='$list'>";
+                        echo "<input type='hidden' name='ctct-list[]' data-value='$list' data-id='$inputid'>";
                     }?>
-                    <input id="<?php echo $inputid;?>" type="checkbox" name="ctct-list-optin" value="1" <?php checked($checked, '1');?>>
+                    <input id="<?php echo $inputid;?>" data-controls="<?php echo $inputid;?>" type="checkbox" name="ctct-list-optin" value="1" <?php checked($checked, '1');?>>
                 <label for=<?php echo $inputid;?>><?php echo $atts['message'];?></label></span>
             </span>
         </span>
@@ -175,4 +176,14 @@ class dd_cf7_form_tag {
         <?php 
 
         } 
+	
+	function enqueue_on_cf7_only() {
+		wp_register_script('dd_cf7_ctct_scripts', plugin_dir_url(__FILE__).'/js/dd-cf7-ctct-public.js', array('jquery'), '1.0', true);
+		if( is_singular() ) {
+			$post = get_post();
+			if( has_shortcode($post->post_content, 'contact-form-7') ) {
+				wp_enqueue_script('dd_cf7_ctct_scripts');
+				}
+			}
+		}
 }

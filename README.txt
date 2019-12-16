@@ -1,11 +1,11 @@
 === Connect Contact Form 7 to Constant Contact ===
 Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
-Tags: Contact, Form, 7, constant, contact, cf7, ctct, email, marketing, api, woocommerce, Contact Form 7, constant contact
+Tags: constant contact, Contact Form 7, email marketing, woocommerce, api, cf7
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,9 @@ Yes, you can do this by using the list: option in the form tag (shortcode) multi
 3. Potential Front end usage.
 
 == Changelog ==
+
+= 1.2.3 =
+Fix for Error in multiple lists with options checkboxes
 
 = 1.2.2 =
 Enable Multiple Lists on Opt-In

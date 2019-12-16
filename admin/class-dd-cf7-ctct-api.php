@@ -137,7 +137,7 @@ class dd_ctct_api {
         if ( $submission ) {
             $posted_data = $submission->get_posted_data();    
         }
-
+		
         if (!isset($posted_data['ctct-list-optin']) ){
                 return false;  
         } 
@@ -235,7 +235,7 @@ class dd_ctct_api {
 		$response = wp_remote_get( $url, $args);
 		$ctct = json_decode(wp_remote_retrieve_body($response));
 		$code = wp_remote_retrieve_response_code($response);
-        if (empty($code)) {
+        if (empty($code) || ($code == 500)) {
 			return 'connection_error';
 		}
 		if ( $code !== 200 ){
@@ -356,23 +356,23 @@ class dd_ctct_api {
         $list_memberships = array_unique( array_merge( $ctct->list_memberships, $submitted_values[ 'chosen-lists' ] ) );
         $lists = array();
         foreach ($list_memberships as $key=>$value){
+            if ($value == '') continue;
             $lists[] = $value;
         }
 
         $deets = $this->build_ctct_array($ctct, $this->details, $submitted_values);
         $sa = $this->build_ctct_array($ctct_addr, $this->street_address, $submitted_values);
-
         // Build JSON Array for Put on CTCT
         $json_data = array_merge($deets, array(
             "email_address" => array(
                 "address" => "{$submitted_values['email_address']}",
             ),
             "street_addresses" => array(array_filter($sa)),
-            "list_memberships" => array_filter($lists),
+            "list_memberships" => $lists,
             "update_source" => "Contact",
             )
          );
-        
+
         $contact_id = $ctct_data->contacts[ 0 ]->contact_id;
 
         $content_length = strlen( json_encode( $json_data ) );
@@ -392,12 +392,17 @@ class dd_ctct_api {
             "body" => json_encode($json_data),
             "method" => "PUT",
         );
-        
+            
         $response = wp_remote_request($url, $args);
         $code = wp_remote_retrieve_response_code($response);
         $message = json_decode(wp_remote_retrieve_body($response));
         
-		if ($code !== 200) {
+		if ($code == 500){
+			$tname = 'ctct_process_failure_' . time();
+			set_transient($tname, $submitted_values , 5 * DAY_IN_SECONDS);
+			$return['success'] = true;
+            return $return;
+		} elseif ($code !== 200) {
     		$body = "While trying to update an existing contact, there was an error \r\n";
             $body .= "Error #:" . $code . "\r\n";
             $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
@@ -468,7 +473,7 @@ class dd_ctct_api {
             $wpdb->delete($table, array('option_id' => $id));
             if ($retry !== true) {
                 $tname = 'ctct_process_failure_' . time();
-                set_transient($submitted_values, $tname, 5 * DAY_IN_SECONDS);
+                set_transient($tname, $submitted_values , 5 * DAY_IN_SECONDS);
             }
 		}
 	}
