@@ -258,6 +258,13 @@ class dd_ctct_api {
 		$names = $this->create_new_contact_array($this->details, $submitted_values);
 		$address = $this->create_new_contact_array($this->street_address, $submitted_values);
 	       
+        $chosen_lists = array();
+        
+        foreach ($submitted_values['chosen-lists'] as $list){
+            if ($list == '') continue;
+            $chosen_lists[] = $list;
+        }
+        
 		$json_data = array_merge($names, array(
 			"email_address" => array (
 				"address" => $submitted_values['email_address'],
@@ -265,10 +272,10 @@ class dd_ctct_api {
 			),
 			"create_source" => "Contact",
 			"street_addresses" => array(array_filter($address)),
-			"list_memberships" => array_filter($submitted_values['chosen-lists']),
+			"list_memberships" => $chosen_lists,
 			)
 		);
-		
+    
         $content_length = strlen(json_encode($json_data));
 		
         /**
