@@ -6,7 +6,7 @@
  * @since    1.0.0
  */
 class dd_cf7_ctct_admin_settings {
-	
+
 	private $api_url = 'https://api.cc.email/v3/';
 
 	public function __construct() {
@@ -67,15 +67,15 @@ class dd_cf7_ctct_admin_settings {
                 delete_option( 'cf7_ctct_settings' );
                 echo '<script>window.location="admin.php?page=dd_ctct"</script>';
 		}
-		
+
 		$logged_in = false;
-        
+
 		// Check required user capability
 		if ( !current_user_can( 'manage_options' ) )  {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'dd-cf7-plugin' ) );
 		}
-		
-		$options = get_option( 'cf7_ctct_settings' ); 
+
+		$options = get_option( 'cf7_ctct_settings' );
 		$lists = get_option('dd_cf7_mailing_lists');
         // Set up variables for function
         $check = array();
@@ -96,7 +96,7 @@ class dd_cf7_ctct_admin_settings {
                 $options['oauth_performed'] = 1;
                 $options['refresh_token'] = $tokenData->refresh_token;
                 $options['access_token'] = $tokenData->access_token;
-                $options['token_time'] = time();			
+                $options['token_time'] = time();
 
                 update_option( 'cf7_ctct_settings', $options );
 
@@ -106,14 +106,14 @@ class dd_cf7_ctct_admin_settings {
                 echo '<script>window.location="admin.php?page=dd_ctct"</script>';
 
             } else {
-				if (!empty($options['access_token'])) {        
+				if (!empty($options['access_token'])) {
 					$check = $this->check_logged_in($options['access_token']);
 				} elseif (false !== $options) {
 					$check['error'] = __('There is a problem with the connection. Please Reauthorize', 'dd-cf7-plugin');
 					$check['logged_in'] = false;
 					$check['message'] = __('Connect to Constant Contact', 'dd-cf7-plugin');
 					$error = true;
-				} 
+				}
             }
         }
         settings_errors();
@@ -121,19 +121,19 @@ class dd_cf7_ctct_admin_settings {
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab nav-tab-active">API Settings</a>
 			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra" class="nav-tab">Additional Settings</a>
-		</h2> <?php 
+		</h2> <?php
 		// Admin Page Layout
 		echo '<div class="wrap" id="dd-cf7-ctct">' . "\n";
         echo '  <img src="'.plugin_dir_url(__FILE__) .'/img/CTCT_horizontal_logo.png">';
         echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
         echo '<div class="card">' . "\n";
-		
+
         // Check for API Errors
 		if (isset($check['error']) && !empty($check['error'])) {
-			echo '<div class="alert-danger"><h4>' . __('There has been an error processing your credentials', 'dd-cf7-plugin'). '</h4>';	
+			echo '<div class="alert-danger"><h4>' . __('There has been an error processing your credentials', 'dd-cf7-plugin'). '</h4>';
 			echo '<p>' . $check['error'] . '</p></div>';
 		} elseif ( false !== $error && false !== $options ) {
-			echo '<div class="alert-danger"><h4>' . __('There has been an error connecting to the Constant Contact API.', 'dd-cf7-plugin'). '</h4>';	
+			echo '<div class="alert-danger"><h4>' . __('There has been an error connecting to the Constant Contact API.', 'dd-cf7-plugin'). '</h4>';
 			echo '<p>' . $check['error'] . '</p></div>';
         } elseif ( false == $options  ) {
 			echo '<div class="alert-info"><h4>' . __('You must enter your API Key and API Secret to connect to Constant Contact', 'dd-cf7-plugin'). '</h4></div>';
@@ -145,7 +145,7 @@ class dd_cf7_ctct_admin_settings {
         _e('These fields are required to connect this application to your Constant Contact account. You must set up a Constant Contact developer account if you don&rsquo;t already have one.' , 'dd-cf7-plugin');
         echo ' <a href="https://v3.developer.constantcontact.com/api_guide/getting_started.html" target="_blank">' . __('Constant Contact Guide', 'dd-cf7-plugin') . '</a>';
         echo '</p>';
-		if ($check['logged_in'] && $check['logged_in'] !== 'unset'){ 
+		if ($check['logged_in'] && $check['logged_in'] !== 'unset'){
 			echo '<p><span class="dashicons dashicons-yes success" style="color: green;"></span> ';
 			_e('You are connected to Constant Contact', 'dd-cf7-plugin');
 			echo '</p>';
@@ -153,7 +153,7 @@ class dd_cf7_ctct_admin_settings {
         echo '	<form action="options.php" method="post">' . "\n";
 		settings_fields( 'dd_cf7_ctct' );
 		do_settings_sections( 'cf7_ctct_settings' );
-		
+
 				// Retrieve data from the database.
 		$options = get_option( 'cf7_ctct_settings' );
 
@@ -165,9 +165,9 @@ class dd_cf7_ctct_admin_settings {
 		echo '<input type="text" name="cf7_ctct_settings[api_callback]" class="regular-text api_callback_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $callback ) . '" readonly>';
 		echo '<p class="description">' . __( 'This is the Redirect URI for your Constant Contact Application.', 'dd-cf7-plugin' ) . '</p>';
 
-		
+
 		echo '<div class="dd-ctct-submit-wrapper">';
-		
+
 		if ($check['logged_in'] && $check['logged_in'] !== 'unset'){
 			$m2 = sprintf(__("'Please confirm you wish to disconnect from Constant Contact and remove API Keys from this application'", 'dd-cf7-plugin'));
 			$path = 'admin.php?page=dd_ctct&action=disconnect';
@@ -204,33 +204,33 @@ class dd_cf7_ctct_admin_settings {
 
 		// Set default value.
 		$value = isset( $options['api_secret'] ) ? $options['api_secret'] : '';
-        
+
 
 		// Field output.
 		echo '<input type="password" name="cf7_ctct_settings[api_secret]" class="regular-text api_secret_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
 
 	}
-    
+
 	function performAuthorization(){
 		// Create authorization URL
-        
+
 		$options = get_option('cf7_ctct_settings');
 		$baseURL = "https://api.cc.email/v3/idfed";
 		$authURL = $baseURL . "?client_id=" . $options['api_key'] . "&scope=account_update+contact_data&response_type=code" . "&redirect_uri=" . urlencode($options['api_callback']);
-        
+
         // Test URL before submitting
         $test_url = wp_remote_request($authURL);
         $response_code = wp_remote_retrieve_response_code($test_url);
-        
+
         // If not 200 - throw error
-        
+
         if ($response_code !== 200){
             echo '<div class="alert-danger" style="margin-top: 1rem;"><h4>' . __('There has been an error trying to connect to Constant Contact. Please verify that API Key, Secret, and Callback URL are correct and saved in your constant contact API Settings page.', 'dd-cf7-plugin'). '</h4></div>';
         } else {
             echo '<script>window.location="'.$authURL.'"</script>';
         }
 	}
-	
+
 	private function getAccessToken($redirectURI, $clientId, $clientSecret, $code) {
 		$options = get_option('cf7_ctct_settings');
 		$options['error'] = '';
@@ -254,7 +254,7 @@ class dd_cf7_ctct_admin_settings {
 		$result = wp_remote_retrieve_body($response);
         return json_decode($result);
     }
-	
+
 	public static function refreshToken($c=1) {
 		$options = get_option( 'cf7_ctct_settings' );
 		$refreshToken = $options['refresh_token'];
@@ -282,7 +282,7 @@ class dd_cf7_ctct_admin_settings {
 		$tokenData = json_decode(wp_remote_retrieve_body($response));
         $code = wp_remote_retrieve_response_code($response);
 
-		if ($code == 200){	
+		if ($code == 200){
 			$options['refresh_token'] = $tokenData->refresh_token;
 			$options['access_token'] = $tokenData->access_token;
 			$options['token_time'] = time();
@@ -297,9 +297,9 @@ class dd_cf7_ctct_admin_settings {
             if ( $c == 1 ) wp_mail($admin_email, 'Constant Contact Authorization Error', $body, $headers);
 		}
 
-        return;		
+        return;
 	}
-    
+
     public function add_enabled_icon() {
 		global $pagenow, $plugin_page;
 
@@ -323,20 +323,22 @@ class dd_cf7_ctct_admin_settings {
 
 			foreach ( $forms as &$form ) {
 				$cf_id = method_exists( $form, 'id' ) ? $form->id() : $form->id;
-                
-				$is_active = get_post_meta($cf_id, '_ctct_cf7');
-				
-				if ( ! empty( $is_active ) /*&& isset( $is_active[0]['ignore_form'] )*/ ) {
+
+				$fields = get_post_meta($cf_id, '_ctct_cf7');
+
+				$is_active = false;
+
+				// Check fields to see if filled in at all, or using the "ignore form button"
+				foreach ($fields as $field){
+					if (isset($field['ignore-form']) && $field['ignore-form'] == 1 ) $is_active = true;
+					foreach ($field['fields'] as $each_field){
+						if (!empty ($each_field[0])) $is_active = true;
+					}
+				}
+
+				if ( $is_active ) {
 					$activeforms[] = $cf_id;
 				}
-			}
-		
-			// Reset the post data, possibly modified by `WPCF7_ContactForm::find()`.
-			wp_reset_postdata();
-
-			// If there are no forms with CTCT integration, get outta here
-			if ( empty( $activeforms ) ) {
-				return;
 			}
 
 			// Otherwise, add the icon to each row with integration.
@@ -378,24 +380,24 @@ class dd_cf7_ctct_admin_settings {
     		$options = get_option( 'cf7_ctct_settings' );
             $code = $this->get_code_status($options['access_token']);
         }
-        $error = null;        
+        $error = null;
         switch ($code){
             case 200:
                 $logged_in = true;
                 break;
-            case 401: 
+            case 401:
                 $error = esc_html("The Access Token used is invalid.");
                 $logged_in = false;
                 break;
             case 501:
                 $error = __("<p>The Constant Contact API service is temporarily unavailable. You may check the status of the Constant Contact API at <a href=\"https://status.constantcontact.com\" target=\"_blank\">API Status</a></p>This plugin will continue to store contacts until the API is active.", 'dd-cf7-plugin');
                 $logged_in = 'unset';
-                break;    
+                break;
             case 500:
                 $error = "There was a problem with our internal service.";
                 $logged_in = false;
                 break;
-            default: 
+            default:
                 $logged_in = false;
                 $error = "Undefined Error Occurred. Please check your settings, API Key, and API Secret.";
                 break;
@@ -407,9 +409,9 @@ class dd_cf7_ctct_admin_settings {
 		} else {
 			$message = __('Connect to Constant Contact', 'dd-cf7-plugin');
 		}
-        
+
         $check = array('message'=>$message, 'error'=>$error, 'logged_in' => $logged_in);
-        
+
         return $check;
     }
     public function get_code_status($access_token){
@@ -443,8 +445,8 @@ class dd_cf7_ctct_admin_settings {
 		 $links['settings'] = sprintf( '<a href="'.admin_url("/admin.php?page=dd_ctct").'">%s</a>', __('Settings') );
 		 return $links;
 		}
-	
-	public function upsell_notice(){ 
+
+	public function upsell_notice(){
 		$screen = get_current_screen();
 	    $user_id = get_current_user_id();
 		$count = get_user_meta($user_id, 'dd-ctct-cf7-notice-counter', true);
