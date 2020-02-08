@@ -44,10 +44,10 @@ class dd_cf7_form_tag {
 
         ob_start();
         if ($hide) : ?>
-	      	<?php foreach ($listid as $list) : ?>
-						<input type="hidden" name="ctct-list[]" id="<?php echo $inputid;?>" value="<?php echo $list;?>" />
-						<input type="hidden" name="ctct-list-optin" value="1" />
-					<?php endforeach;?>
+		<?php foreach ($listid as $list) : ?>
+			<input type="hidden" name="ctct-list[]" id="<?php echo $inputid;?>" value="<?php echo $list;?>" />
+			<input type="hidden" name="ctct-list-optin" value="1" />
+		<?php endforeach;?>
         <?php else: ?>
         <span class="wpcf7-form-control-wrap <?php echo $tag->name;?>">
             <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $inputid;?>">
