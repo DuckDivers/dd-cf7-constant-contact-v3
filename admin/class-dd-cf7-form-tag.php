@@ -14,9 +14,9 @@ class dd_cf7_form_tag {
         add_action( 'admin_init', array( $this, 'init_tag_generator'), 99 );
 		add_action( 'wp_enqueue_scripts', array($this, 'enqueue_on_cf7_only'));
 	}
- 
+
 	public function dd_ctct_add_form_tag() {
-		wpcf7_add_form_tag( 'ctct', array($this, 'dd_form_tag_handler'), array('name-attr' => true) ); 
+		wpcf7_add_form_tag( 'ctct', array($this, 'dd_form_tag_handler'), array('name-attr' => true) );
 	}
  	public function init_tag_generator() {
              if (class_exists('WPCF7_TagGenerator')) {
@@ -41,13 +41,14 @@ class dd_cf7_form_tag {
    		$listid = $tag->get_option('list');
 		$checked = ($tag->get_option('checked')[0]) ? '1' : '0';
 		$inputid = (!empty($atts['id'])) ? 'id="'.$atts['id'].'" ' : 'ctct-form-'. $tag->name ;
-    
+
         ob_start();
         if ($hide) : ?>
-        <?php foreach ($listid as $list) : ?>
-			<input type="hidden" name="ctct-list[]" id="<?php echo $inputid;?>" value="<?php echo $list;?>" /> 
-		<?php endforeach;?>
-        <?php else: ?>         
+	      	<?php foreach ($listid as $list) : ?>
+						<input type="hidden" name="ctct-list[]" id="<?php echo $inputid;?>" value="<?php echo $list;?>" />
+						<input type="hidden" name="ctct-list-optin" value="1" />
+					<?php endforeach;?>
+        <?php else: ?>
         <span class="wpcf7-form-control-wrap <?php echo $tag->name;?>">
             <span class="wpcf7-form-control wpcf7-checkbox <?php echo $atts['class'];?>" id="wrapper-for-<?php echo $inputid;?>">
                 <span class="wpcf7-list-item-label">
@@ -58,15 +59,15 @@ class dd_cf7_form_tag {
                 <label for=<?php echo $inputid;?>><?php echo $atts['message'];?></label></span>
             </span>
         </span>
-        
-        <?php 
+
+        <?php
         endif;
         return ob_get_clean();
         // End of form tag output.
 	}
 
         public function dd_ctct_form_tag($contact_form, $args){
-            $args = wp_parse_args( $args, array() );  
+            $args = wp_parse_args( $args, array() );
         ?>
 
         <div id="wpcf7-tg-pane-wc_products" class="control-box">
@@ -102,14 +103,14 @@ class dd_cf7_form_tag {
                                         function set_value(){
                                             var chosenList = jQuery('#listChoice').val();
                                             jQuery('input[name="list"]').val(chosenList);
-                                        }	
+                                        }
                                         </script></td>
                                 <?php else:?>
                                     <th></th>
                                     <td><h5>You must enter your constant contact settings before completing these fields</h5>
                                         <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
                                     </td>
-                                <?php endif;?>    
+                                <?php endif;?>
 								</tr>
 								<tr>
 									<th scope="row"><label for="ctct_label"><?php echo esc_html( __( 'Checkbox Label (optional)', 'dd-cf7-plugin' ) ); ?></label>
@@ -163,7 +164,7 @@ class dd_cf7_form_tag {
                                     <input type="text" name="id" class="idvalue oneline option" id="<?php echo esc_attr( $args['content'] . '-id' ); ?>" />
                                 </td>
                             </tr>
-                        </tbody></table>    
+                        </tbody></table>
                 </fieldset>
                 <div class="insert-box" style="padding-left: 15px; padding-right: 15px;">
                     <div class="tg-tag clear"><?php echo __( "This will insert a checkbox for the CTCT Tag.", 'dd-cf7-plugin' ); ?><br /><input type="text" name="ctct" class="tag code" readonly="readonly" onfocus="this.select();" onmouseup="return false;" /></div>
@@ -173,10 +174,10 @@ class dd_cf7_form_tag {
                     </div>
                 </div>
             </div>
-        <?php 
+        <?php
 
-        } 
-	
+        }
+
 	function enqueue_on_cf7_only() {
 		wp_register_script('dd_cf7_ctct_scripts', plugin_dir_url(__FILE__).'/js/dd-cf7-ctct-public.js', array('jquery'), '1.0', true);
 		if( is_singular() ) {
