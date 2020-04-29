@@ -75,6 +75,8 @@ class dd_ctct_api {
         // Check if E-Mail Address is valid
 
         $email = sanitize_email($submitted_values['email_address']);
+        //If there's no email... Bail
+        if (empty($email)) return false;
 
         $valid_email = $this->validate_email($email);
 
