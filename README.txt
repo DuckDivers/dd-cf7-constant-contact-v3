@@ -3,9 +3,9 @@ Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
 Tags: constant contact, Contact Form 7, email marketing, woocommerce, api, cf7
 Requires at least: 4.8
-Tested up to: 5.3
+Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 1.2.7
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,9 @@ Yes, you can do this by using the list: option in the form tag (shortcode) multi
 3. Potential Front end usage.
 
 == Changelog ==
+
+= 1.3 =
+Allows for unsubscribed email to be sent to those who have previously unsubscribed. You can use an official Constant Contact form to re-subscribe.
 
 = 1.2.7 =
 Add if empty email... bail out

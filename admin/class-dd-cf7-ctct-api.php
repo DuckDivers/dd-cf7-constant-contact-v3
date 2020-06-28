@@ -74,37 +74,39 @@ class dd_ctct_api {
 
         // Check if E-Mail Address is valid
 
-        $email = sanitize_email($submitted_values['email_address']);
-        //If there's no email... Bail
-        if (empty($email)) return false;
+				if (!isset($submitted_values['email_address']) || empty($submitted_values['email_address'])) return false;
+
+				$email = sanitize_email($submitted_values['email_address']);
 
         $valid_email = $this->validate_email($email);
 
         if (false == $valid_email) {
-            $body = "<p>The following is from a user who attempted to enter in an invalid domain name on Contact Form ID {$submitted_values['formid']}.</p>";
-			ob_start();
-			echo '<pre>'; print_r($submitted_values); echo '</pre>';
-			$body .= ob_get_clean();
-				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
-            return false;
-        }
+				$website = get_bloginfo('name');
+            $body = "<p>The following is from a user who attempted to enter in an invalid domain name on Contact Form ID {$submitted_values['formid']} at your website {$website}</p>";
+				ob_start();
+				echo '<pre>'; print_r($submitted_values); echo '</pre>';
+				$body .= ob_get_clean();
+					if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
+	            return false;
+	        }
 
         $exists = $this->check_email_exists($submitted_values['email_address']);
-		$tname = 'ctct_process_failure_' . time();
-		if ($exists == 'unauthorized'){
-			if ($c > 2) {
-				set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);
-				return false;
-			}
-			$options = get_option( 'cf7_ctct_settings' );
+				$tname = 'ctct_process_failure_' . time();
+				if ($exists == 'unauthorized'){
+					if ($c > 2) {
+						set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);
+						return false;
+					}
+					$options = get_option( 'cf7_ctct_settings' );
             if (isset($options['refresh_token'])) {
 		        dd_cf7_ctct_admin_settings::refreshToken($c);
                 $this->push_to_constant_contact($c+1);
             } else {
-                $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
+				$website = get_bloginfo('name');
+        $body = "<p>While Attempting to connect to Constant Contact from Contact Form ID {$submitted_values['formid']}, an error was encountered. This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application on your website {$website}.</p>";
 					if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
-				set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);
-                return false;
+						set_transient($tname, $submitted_values, 5 * DAY_IN_SECONDS);
+            return false;
             }
 		} elseif (false == $exists){
 			$ctct = $this->create_new_subscription($submitted_values);
@@ -120,7 +122,8 @@ class dd_ctct_api {
 		if (isset($ctct)){
 		  if (true !== $ctct['success']){
 			ob_start();
-                echo "{$ctct['message']}\r\n\r\n";
+			  	echo 'Message from: ' . get_bloginfo('name') .'<br><br>';
+			  	echo "{$ctct['message']}\r\n\r\n";
                 echo '<pre>'; print_r($submitted_values); echo '</pre>';
 				$body = ob_get_clean();
 				if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
@@ -205,7 +208,8 @@ class dd_ctct_api {
 		$code = wp_remote_retrieve_response_code($response);
 
 		if ( $code !== 200) {
-			$body = "While attempting to retrieve the constant contact lists. \r\n";
+			$website = get_bloginfo('name');
+			$body = "While attempting to retrieve the constant contact lists on {$website}. \r\n";
 			$body .= "Error #:" . $code . "\r\n";
 			$body .= $ctct['error_message'];
 			if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
@@ -256,15 +260,17 @@ class dd_ctct_api {
 
 	public function create_new_subscription($submitted_values){
 		$return = array();
+		if (empty($submitted_values)) $return['success'] = false;
 		$names = $this->create_new_contact_array($this->details, $submitted_values);
 		$address = $this->create_new_contact_array($this->street_address, $submitted_values);
 
         $chosen_lists = array();
-
-        foreach ($submitted_values['chosen-lists'] as $list){
-            if ($list == '') continue;
-            $chosen_lists[] = $list;
-        }
+		if (isset($submitted_values['chosen-lists'])){
+			foreach ($submitted_values['chosen-lists'] as $list){
+				if ($list == '') continue;
+				$chosen_lists[] = $list;
+			}
+		}
 
 		$json_data = array_merge($names, array(
 			"email_address" => array (
@@ -299,19 +305,12 @@ class dd_ctct_api {
 
         $response = wp_remote_post($url, $args);
         $code = wp_remote_retrieve_response_code($response);
-		$message = json_decode(wp_remote_retrieve_body($response));
-		if (empty($code)) $code = 503;
+				$message = json_decode(wp_remote_retrieve_body($response));
+				if (empty($code)) $code = 503;
 
         if ($code !== 201){
             if ($code == 409){
-                ob_start();
-				echo '<p>The following contact had previously un-subscribed from one of your lists, and can not be added via this application.</p>';
-				echo '<p>&nbsp;</p>';
-                echo "<p>This was submitted through FormID: {$submitted_values['formid']}</p>";
-                $body = ob_get_clean();
-                $return['success'] = false;
-                $return['message'] = $body;
-				return $return;
+                $this->trigger_unsubscribed_email($submitted_values);
             } else {
                 ob_start();
         		echo "<p>While trying to add a new email address, there was an error</p>";
@@ -361,9 +360,14 @@ class dd_ctct_api {
         $ctct_addr = $ctct->street_addresses[ 0 ];
 
         // Merge List Memberships
-        $list_memberships = array_unique( array_merge( $ctct->list_memberships, $submitted_values[ 'chosen-lists' ] ) );
+        /**
+ * ToDo Make checkbox to set form option to add or remove
+ *
+ * @since    1.0.0
+ */
+        //$list_memberships = array_unique( array_merge( $ctct->list_memberships, $submitted_values[ 'chosen-lists' ] ) );
         $lists = array();
-        foreach ($list_memberships as $key=>$value){
+        foreach ($submitted_values[ 'chosen-lists' ] as $key=>$value){
             if ($value == '') continue;
             $lists[] = $value;
         }
@@ -411,6 +415,11 @@ class dd_ctct_api {
 			$return['success'] = true;
             return $return;
 		} elseif ($code !== 200) {
+			if (strpos($message[0]->error_message , 'unsubscribed') !== false){
+				$this->trigger_unsubscribed_email($submitted_values);
+				$return['success'] = true;
+				return $return;
+			}
     		$body = "While trying to update an existing contact, there was an error \r\n";
             $body .= "Error #:" . $code . "\r\n";
             $body .= "The Message from Constant Contact was: {$message[0]->error_message}\r\n";
@@ -484,5 +493,26 @@ class dd_ctct_api {
                 set_transient($tname, $submitted_values , 5 * DAY_IN_SECONDS);
             }
 		}
+	}
+
+	public function trigger_unsubscribed_email($submitted_values){
+
+		$options = get_option( 'dd_cf7_optin_email_settings' );
+		if (!isset($options['ctct_re_optin_form_url'])) return;
+		$body = wp_kses_post($options['ctct_resubscribe_email_text']);
+
+		$body = str_replace('{first_name}', $submitted_values['first_name'], $body);
+		$body = str_replace('{first_name}', $submitted_values['first_name'], $body);
+		$body = str_replace('{email}', $submitted_values['email_address'], $body);
+		$body = str_replace('{form_url}', $options['ctct_re_optin_form_url'], $body);
+		$body = str_replace('{blog_name}', get_bloginfo('name') , $body);
+
+		$to = esc_attr($submitted_values['email_address']);
+		$subject = $options['ctct_re_optin_form_subject'];
+		$headers = array('Content-Type: text/html; charset=UTF-8');
+
+		wp_mail( $to, $subject, $body, $headers );
+
+		return;
 	}
 }

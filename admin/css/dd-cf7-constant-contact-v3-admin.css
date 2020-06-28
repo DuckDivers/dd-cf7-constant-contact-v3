@@ -84,6 +84,10 @@ form.tag-generator-panel[data-id="ctct"] {
 	width: 100%;
 	margin-bottom: .5rem;
 }
+div#tab_ctct_email {
+    max-width: 1000px;
+    width: 100%;
+}
 @media (max-width: 767px){
 	#dd-cf7-ctct .card, .settings_page_dd-ctct-extra .card {
 		max-width: 100%;

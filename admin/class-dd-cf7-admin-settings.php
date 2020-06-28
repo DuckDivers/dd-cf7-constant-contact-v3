@@ -288,8 +288,8 @@ class dd_cf7_ctct_admin_settings {
 			$options['token_time'] = time();
 			update_option('cf7_ctct_settings', $options );
 		} else {
-		 	$body = "<p>An error occurred when trying to get a refresh token.  This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application.</p>";
 			$website = parse_url(get_bloginfo('url'))['host'];
+		 	$body = "<p>An error occurred when trying to get a refresh token.  This is a fatal error, and you will need to revisit the Constant Contact settings page and re-authorize the application at {$website}.</p>";
             $headers = array('Content-Type: text/html; charset=UTF-8');
             $headers[] = "From: " . get_bloginfo('name') . ' <wordpress@' . $website  . '>' . PHP_EOL;
 	        $options = get_option('cf7_ctct_extra_settings');

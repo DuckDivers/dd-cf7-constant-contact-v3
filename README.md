@@ -3,7 +3,7 @@ Contributors: thehowarde
 Donate link: https://www.howardehrenberg.com
 Tags: Contact Form 7, constant contact, cf7, ctct, email marketing, api, woocommerce
 Requires at least: 4.8
-Tested up to: 5.3
+Tested up to: 5.4
 Requires PHP: 7.0
 Stable tag: 1.2
 License: GPLv2 or later
