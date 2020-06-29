@@ -32,16 +32,15 @@ class dd_cf7_form_tag {
 
 		if ( empty( $tag->name ) )
 			return '';
-		$hidden = $tag->get_option('hidden')[0];
+		$hidden = (false !== $tag->get_option('hidden')) ? $tag->get_option('hidden')[0] : null;
 		$hide = (null !== $hidden && $hidden == 'true') ? true : false;
 		$atts = array();
-		$atts['class'] = (isset($tag->get_option)) ? $tag->get_option( 'class' )[0] : '';
-		$atts['id'] = $tag->get_option( 'id' , 'id', true);
+		$atts['class'] = $tag->get_class_option();
+		$atts['id'] = $tag->get_id_option();
 		$atts['message'] = ( empty ($tag->get_option('ctct_label') ) ) ? 'Sign me up for your mailing list' : str_replace('+', ' ', $tag->get_option('ctct_label')[0]);
    		$listid = $tag->get_option('list');
-		$checked = '0';
-		if (null !== $tag->get_option('checked')) $checked = '1';
-		$inputid = (!empty($atts['id'])) ? 'id="'.$atts['id'].'" ' : 'ctct-form-'. $tag->name ;
+		$checked = (false !== $tag->get_option('checked')) ? '1' : '0';
+		$inputid = (!empty($atts['id'])) ? $atts['id'] : 'ctct-form-'. $tag->name ;
 
         ob_start();
         if ($hide) : ?>
