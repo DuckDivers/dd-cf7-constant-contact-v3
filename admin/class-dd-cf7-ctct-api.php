@@ -270,6 +270,9 @@ class dd_ctct_api {
 				if ($list == '') continue;
 				$chosen_lists[] = $list;
 			}
+		} else {
+			$return['success'] = false;
+			return $return;
 		}
 
 		$json_data = array_merge($names, array(
