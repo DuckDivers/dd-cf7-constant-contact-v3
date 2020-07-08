@@ -34,19 +34,19 @@ class dd_cf7_ctct_additional_settings {
 			false,
 			'cf7_ctct_extra_settings'
 		);
-		
+
 		register_setting(
 			'dd_cf7_optin_email',
 			'dd_cf7_optin_email_settings'
 		);
-		
+
 		add_settings_section(
 			'cf7_ctct_resubscribe_email_section',
 			'',
 			false,
 			'dd_cf7_optin_email_settings'
 		);
-				
+
 		add_settings_field(
 			'admin_email',
 			__( 'Admin E-Mail', 'dd-cf7-plugin' ),
@@ -61,14 +61,14 @@ class dd_cf7_ctct_additional_settings {
 			'cf7_ctct_extra_settings',
 			'cf7_ctct_extra_settings_section'
 		);
-        if ( 
-              in_array( 
-                'woocommerce/woocommerce.php', 
-                apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) 
-              ) 
+        if (
+              in_array(
+                'woocommerce/woocommerce.php',
+                apply_filters( 'active_plugins', get_option( 'active_plugins' ) )
+              )
             ) {
             add_settings_field(
-                'add_to_wc_checkout', 
+                'add_to_wc_checkout',
                 __( 'Add to WooCommerce Checkout?'),
                 array( $this, 'render_add_to_wc_field'),
                 'cf7_ctct_extra_settings',
@@ -76,7 +76,7 @@ class dd_cf7_ctct_additional_settings {
             );
 
             add_settings_field(
-                'wc_checkout_lists', 
+                'wc_checkout_lists',
                 __( 'Choose WooCommerce CTCT Lists?'),
                 array( $this, 'render_choose_wc_list'),
                 'cf7_ctct_extra_settings',
@@ -84,35 +84,35 @@ class dd_cf7_ctct_additional_settings {
             );
 
             add_settings_field(
-                'ctct_wc_checkout_text', 
+                'ctct_wc_checkout_text',
                 __( 'Opt-in Text?'),
                 array( $this, 'render_wc_opt_in'),
                 'cf7_ctct_extra_settings',
                 'cf7_ctct_extra_settings_section'
                 );
-            
+
             }
-		
+
 		add_settings_field(
-			'ctct_re_optin_form_url', 
+			'ctct_re_optin_form_url',
 			__( 'Re-Subscribe Form URL'),
 			array( $this, 'render_re_optin_form_url'),
 			'dd_cf7_optin_email_settings',
 			'cf7_ctct_resubscribe_email_section'
 			);
-		
+
 		add_settings_field(
-			'ctct_re_optin_form_subject', 
+			'ctct_re_optin_form_subject',
 			__( 'Re-Subscribe E-Mail Subject'),
 			array( $this, 'render_resubscribe_subject'),
 			'dd_cf7_optin_email_settings',
 			'cf7_ctct_resubscribe_email_section'
 			);
-		
+
 		add_settings_field(
-			'cf7_ctct_resubscribe_email_content', 
-			__('E-Mail Content', 'dd-cf7-plugin'), 
-			array($this, 'resubscribe_email_content'), 
+			'cf7_ctct_resubscribe_email_content',
+			__('E-Mail Content', 'dd-cf7-plugin'),
+			array($this, 'resubscribe_email_content'),
 			'dd_cf7_optin_email_settings',
 			'cf7_ctct_resubscribe_email_section'
 		);
@@ -140,18 +140,17 @@ class dd_cf7_ctct_additional_settings {
 			<a href="<?php echo admin_url();?>admin.php?page=dd_ctct" class="nav-tab">API Settings</a>
 			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra" class="nav-tab <?php echo ($active == 'main') ? 'nav-tab-active' : '';?>">Additional Settings</a>
 			<a href="<?php echo admin_url();?>options-general.php?page=dd-ctct-extra&tab=email" class="nav-tab <?php echo ($active == 'email') ? 'nav-tab-active' : '';?>">Re-Subscribe E-Mail</a>
-		</h2> <?php 
+		</h2> <?php
 		// Admin Page Layout
 		echo '<div class="wrap">' . "\n";
 		echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
 		echo '	<div class="card" id="tab_ctct_'.$active.'">' . "\n";
 		echo '	<form action="options.php" method="post">' . "\n";
-		
+
 		if ($active == 'main'){
 			settings_fields( 'dd_cf7_ctct_extra' );
 			do_settings_sections( 'cf7_ctct_extra_settings' );
 		} else {
-			echo 'here';
 			settings_fields('dd_cf7_optin_email');
 			do_settings_sections('dd_cf7_optin_email_settings');
 		}
@@ -159,7 +158,7 @@ class dd_cf7_ctct_additional_settings {
 
 		echo '	</form>' . "\n";
 		echo '</div></div>' . "\n";
-				
+
 	}
 
 	function render_admin_email_field() {
@@ -179,7 +178,7 @@ class dd_cf7_ctct_additional_settings {
 	function render_send_email_field() {
 		// Retrieve data from the database.
 		$options = get_option( 'cf7_ctct_extra_settings' );
-		
+
 		if (false == $options) $options = array('send_email' => 'true');
 
 		// Set default value.
@@ -190,7 +189,7 @@ class dd_cf7_ctct_additional_settings {
 		echo '<span class="description">' . __( 'Send an E-Mail to the Admin when Errors occur.', 'dd-cf7-plugin' ) . '</span>';
 
 	}
-	
+
     function render_add_to_wc_field() {
 		// Retrieve data from the database.
 		$options = get_option( 'cf7_ctct_extra_settings' );
@@ -203,7 +202,7 @@ class dd_cf7_ctct_additional_settings {
 		echo '<span class="description">' . __( 'Adds an opt-in box on the checkout for WooCommerce', 'dd-cf7-plugin' ) . '</span>';
 
 	}
-    
+
     function render_choose_wc_list(){
         wp_enqueue_script('dd-cf7-constant-contact-v3');
 		$options = get_option( 'cf7_ctct_extra_settings' );
@@ -213,7 +212,7 @@ class dd_cf7_ctct_additional_settings {
             <?php if (false !== $lists) :?>
 				<select id="list" class="select2" name="cf7_ctct_extra_settings[wc_checkout_lists][]" multiple>
 					<?php foreach ($lists as $list => $name):
-                        $selected = (isset($options['wc_checkout_lists']) && in_array( $list, $settings ) )? ' selected="selected" ' : ''; 
+                        $selected = (isset($options['wc_checkout_lists']) && in_array( $list, $settings ) )? ' selected="selected" ' : '';
                         ?>
 						<option value="<?php echo $list;?>" <?php echo $selected;?>><?php echo $name;?></option>
 					<?php endforeach;?>
@@ -225,9 +224,9 @@ class dd_cf7_ctct_additional_settings {
             <a href="<?php echo admin_url();?>/admin.php?page=dd_ctct">Update your settings</a>
             <?php endif;?>
 	    <?php
-        
+
     }
-    
+
     function render_wc_opt_in(){
         // Retrieve data from the database.
 		$options = get_option( 'cf7_ctct_extra_settings' );
@@ -239,7 +238,7 @@ class dd_cf7_ctct_additional_settings {
         echo '<input type="text" name="cf7_ctct_extra_settings[ctct_wc_checkout_text]" class="regular-text ctct_wc_checkout_text_field" placeholder="' . esc_attr__( '', 'dd-cf7-plugin' ) . '" value="' . esc_attr( $value ) . '">';
 
     }
-	
+
     function render_resubscribe_subject(){
         // Retrieve data from the database.
 		$options = get_option( 'dd_cf7_optin_email_settings' );
@@ -264,14 +263,14 @@ class dd_cf7_ctct_additional_settings {
 		<p class="description">'. esc_attr__('Include the complete URL to the subscription form', 'dd-cf7-plugin').'</p>';
 
     }
-	
+
 	function resubscribe_email_content(){
 		$options = get_option( 'dd_cf7_optin_email_settings' );
 		$value = isset( $options['ctct_resubscribe_email_text'] ) ? $options['ctct_resubscribe_email_text'] : $this->default_email_text();
 		echo '<textarea name="dd_cf7_optin_email_settings[ctct_resubscribe_email_text]" class="widefat ctct_resubscribe_email_text_field" rows="10">' . $value . '</textarea>';
 		echo '<p class="description">' . __( 'Default Email Content. Variables include ', 'dd_theme' ) . '<code>{first_name} {last_name} {email} {form_url}</code> Please use basic HTML like <code>&lt;p&gt;&lt;br&gt;</code> etc for formatting.</p>';
 	}
-	
+
 	private function default_email_text(){
 		$text = 'Dear {first_name}, <br>
 <p>Since you have previously unsubscribed from one of our mailing lists, Constant Contact requires that you must fill in one of their special subscription forms. If you would please visit {form_url} and fill in the form, you will be re-subscribed to our mailing list.</p>
