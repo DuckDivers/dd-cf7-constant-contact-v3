@@ -212,7 +212,7 @@ class dd_ctct_api {
 			$body = "While attempting to retrieve the constant contact lists on {$website}. \r\n";
 			$body .= "Error #:" . $code . "\r\n";
 			$body .= $ctct['error_message'];
-			if ($this->wants_email()) wp_mail($this->get_admin_email(), 'Constant Contact API Error', $body, $this->email_headers());
+			error_log( $body );
 			return false;
 		} else {
 			$lists_array = array();
